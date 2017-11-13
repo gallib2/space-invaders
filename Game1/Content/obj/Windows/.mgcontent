@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SourceFileCollection xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Profile>Reach</Profile>
+  <Platform>Windows</Platform>
+  <Config />
+  <SourceFiles>
+    <File>C:/Users/Gallib/Desktop/Game1/Game1/Content/Sprites/BG_Space01_1024x768.jpg</File>
+    <File>C:/Users/Gallib/Desktop/Game1/Game1/Content/Sprites/Bullet.png</File>
+    <File>C:/Users/Gallib/Desktop/Game1/Game1/Content/Sprites/Enemy0101_32x32.png</File>
+    <File>C:/Users/Gallib/Desktop/Game1/Game1/Content/Sprites/Enemy0201_32x32.png</File>
+    <File>C:/Users/Gallib/Desktop/Game1/Game1/Content/Sprites/Enemy0301_32x32.png</File>
+    <File>C:/Users/Gallib/Desktop/Game1/Game1/Content/Sprites/MotherShip_32x120.png</File>
+    <File>C:/Users/Gallib/Desktop/Game1/Game1/Content/Sprites/Ship01_32x32.png</File>
+  </SourceFiles>
+</SourceFileCollection>
