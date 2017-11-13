@@ -8,28 +8,24 @@ using System.Threading.Tasks;
 
 namespace Game1
 {
-    public class Enemy
+    public class Enemy : Entity
     {
-        public Vector2 Position { get; set; }
-        public Color Color { get; set; }
-        public Texture2D TextureEnemy { get; set; }
         public bool IsVisible { get; set; }
         public static eEnemyMovementOptions EnemyMovementStatus { get; set; }
         public static bool IsEnemyMoveRight { get; set; }
-        public static float Direction { get; set; }
         public static float speedMovement { get; set; }
-        
-
         public static readonly float sr_TimePercentBetweenJumps = 0.9f;
+        public static float Direction { get; set; }
+
 
         public void InitPosition()
         {
             // Init the enemy position
-            float x = TextureEnemy.Width;
-            float y = TextureEnemy.Height * 3;
+            float x = Texture.Width;
+            float y = Texture.Height * 3;
 
             // Offset:
-            x -= TextureEnemy.Width / 2;
+            x -= Texture.Width / 2;
 
             Position = new Vector2(x, y);
             Direction = 1f;

@@ -25,11 +25,11 @@ namespace Game1
 
 
         Spaceship m_Spaceship = new Spaceship();
+        bool m_IsShooting = false;
+        Bullet m_BulletSpaceShip = new Bullet();
 
         Texture2D m_TextureBackground;
-
         Vector2 m_PositionBackground;
-
         Color m_TintBackground = Color.White;
 
 
@@ -54,9 +54,11 @@ namespace Game1
 
             // TODO: use this.Content to load your game content here
             m_TextureBackground = Content.Load<Texture2D>(@"Sprites\BG_Space01_1024x768");
-            m_Enemy.TextureEnemy = Content.Load<Texture2D>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.Enemy1]);
+            m_Enemy.Texture = Content.Load<Texture2D>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.Enemy1]);
             /// m_TextureShip = Content.Load<Texture2D>(@"Sprites\Ship01_32x32");
 
+            m_BulletSpaceShip.Texture = Content.Load<Texture2D>(ImagePathProvider.BulletPathImage);
+            m_BulletSpaceShip.Color = Color.Red;
             m_Spaceship.Texture = Content.Load<Texture2D>(ImagePathProvider.SpaceShipPathImage);
             loadEnemyContent(5, 9);
 
@@ -74,7 +76,7 @@ namespace Game1
                     m_EnemiesList[i].Add(new Enemy());
                     KeyValuePair<string, Color> imageAndColorToLoad = getEnemyImageAndColor(i);
                     //string imageToLoad = getImageToLoad(i);
-                    m_EnemiesList[i][j].TextureEnemy = Content.Load<Texture2D>(imageAndColorToLoad.Key);
+                    m_EnemiesList[i][j].Texture = Content.Load<Texture2D>(imageAndColorToLoad.Key);
                     m_EnemiesList[i][j].Color = imageAndColorToLoad.Value;
                 }
             }
@@ -125,8 +127,8 @@ namespace Game1
                 for (j = 0; j < 9; j++)
                 {
                     // TODO : fix the spaces between the enemies
-                    x = m_EnemiesList[i][j].TextureEnemy.Width / 2 + (j * m_EnemiesList[i][j].TextureEnemy.Width * 2);
-                    y = m_EnemiesList[i][j].TextureEnemy.Height * 3 + (i * m_EnemiesList[i][j].TextureEnemy.Height);
+                    x = m_EnemiesList[i][j].Texture.Width / 2 + (j * m_EnemiesList[i][j].Texture.Width * 2);
+                    y = m_EnemiesList[i][j].Texture.Height * 3 + (i * m_EnemiesList[i][j].Texture.Height);
 
                     m_EnemiesList[i][j].Position = new Vector2(x, y);
                 }
@@ -203,9 +205,13 @@ namespace Game1
             ///m_PositionShip.X += currGamePadState.ThumbSticks.Left.X * 120 * (float)gameTime.ElapsedGameTime.TotalSeconds;
             ///GamePad.SetVibration(PlayerIndex.One, 0, Math.Abs(currGamePadState.ThumbSticks.Left.X));
 
-
-
             shipUpdate(gameTime);
+
+            if (m_IsShooting)
+            {
+                // if()  get to ciel OR hit enemy => m_IsShooting = false
+                m_BulletSpaceShip.Position = new Vector2(m_BulletSpaceShip.Position.X, m_BulletSpaceShip.Position.Y - (150 * (float)gameTime.ElapsedGameTime.TotalSeconds));
+            }
 
             if (isEnemyNextMoveIsWallAndUpdateGap())
             {
@@ -219,6 +225,8 @@ namespace Game1
 
         private void shipUpdate(GameTime gameTime)
         {
+            shootStatus();
+
             // move the ship using the mouse:
             m_Spaceship.Position = new Vector2((m_Spaceship.Position.X + GetMousePositionDelta().X), m_Spaceship.Position.Y);
 
@@ -232,6 +240,25 @@ namespace Game1
             }
         }
 
+        private void shootStatus()
+        {
+            bool isPossibleToShoot = true; // TODO!!!!
+            MouseState currMouseState = Mouse.GetState();
+
+            if(m_PrevMouseState != null)
+            {
+                if (currMouseState.LeftButton == ButtonState.Pressed && m_PrevMouseState.Value.LeftButton == ButtonState.Released)
+                {
+                    if (isPossibleToShoot)
+                    {
+                        m_BulletSpaceShip.Position = new Vector2(m_Spaceship.Position.X, m_Spaceship.Position.Y);
+                        m_IsShooting = true;
+                    }
+                }
+            }
+
+
+        }
 
         private void handleGameOver()
         {
@@ -261,7 +288,7 @@ namespace Game1
                 foreach (var enemy in enemiesRow)
                 {
                     nextEnemyPosition = enemy.Position.Y; // + (enemy.TextureEnemy.Height / 2);
-                    if (nextEnemyPosition >= this.GraphicsDevice.Viewport.Height - enemy.TextureEnemy.Height)
+                    if (nextEnemyPosition >= this.GraphicsDevice.Viewport.Height - enemy.Texture.Height)
                     {
                         isNextMoveIsFloor = true;
                     }
@@ -275,10 +302,10 @@ namespace Game1
         {
             float nextEnemyPosition = enemy.Position.X + (enemy.Position.X / 2);
             bool isNextMoveIsWall = false;
-            if (nextEnemyPosition > this.GraphicsDevice.Viewport.Width - enemy.TextureEnemy.Width)
+            if (nextEnemyPosition > this.GraphicsDevice.Viewport.Width - enemy.Texture.Width)
             {
                 isNextMoveIsWall = true;
-                this.GapToWall = this.GraphicsDevice.Viewport.Width - enemy.Position.X - enemy.TextureEnemy.Width;
+                this.GapToWall = this.GraphicsDevice.Viewport.Width - enemy.Position.X - enemy.Texture.Width;
             }
 
             return isNextMoveIsWall;
@@ -286,7 +313,7 @@ namespace Game1
 
         private bool isEnemyNextLeftMoveIsWallAndUpdateGap(Enemy enemy)
         {
-            float nextEnemyPosition = enemy.Position.X - (enemy.TextureEnemy.Width / 2);
+            float nextEnemyPosition = enemy.Position.X - (enemy.Texture.Width / 2);
             bool isNextMoveIsWall = false;
             if (nextEnemyPosition < 0)
             {
@@ -310,11 +337,11 @@ namespace Game1
                 {
                     foreach (var enemy in enemiesRow)
                     {
-                        nextEnemyPosition = enemy.Position.X + (enemy.TextureEnemy.Width / 2);
-                        if (nextEnemyPosition > this.GraphicsDevice.Viewport.Width - enemy.TextureEnemy.Width)
+                        nextEnemyPosition = enemy.Position.X + (enemy.Texture.Width / 2);
+                        if (nextEnemyPosition > this.GraphicsDevice.Viewport.Width - enemy.Texture.Width)
                         {
                             isNextMoveIsWall = true;
-                            this.GapToWall = this.GraphicsDevice.Viewport.Width - enemy.Position.X - enemy.TextureEnemy.Width;
+                            this.GapToWall = this.GraphicsDevice.Viewport.Width - enemy.Position.X - enemy.Texture.Width;
                         }
                     }
                 }
@@ -326,7 +353,7 @@ namespace Game1
                 {
                     foreach (var enemy in enemiesRow)
                     {
-                        nextEnemyPosition = enemy.Position.X - (enemy.TextureEnemy.Width / 2);
+                        nextEnemyPosition = enemy.Position.X - (enemy.Texture.Width / 2);
                         if (nextEnemyPosition < 0)
                         {
                             isNextMoveIsWall = true;
@@ -383,12 +410,12 @@ namespace Game1
 
         private void enemyMoveDown(Enemy enemy)
         {
-            enemy.Position = new Vector2(enemy.Position.X, enemy.Position.Y + enemy.TextureEnemy.Height / 2);
+            enemy.Position = new Vector2(enemy.Position.X, enemy.Position.Y + enemy.Texture.Height / 2);
         }
 
         private void enemyMoveRegular(Enemy enemy)
         {
-            enemy.Position = new Vector2(enemy.Position.X + (Enemy.Direction) * (enemy.TextureEnemy.Width / 2), enemy.Position.Y);
+            enemy.Position = new Vector2(enemy.Position.X + (Enemy.Direction) * (enemy.Texture.Width / 2), enemy.Position.Y);
         }
 
         private void actionOnEveryEnemy(DelegateActionToCommit actionsToCommit)
@@ -438,12 +465,14 @@ namespace Game1
 
             spriteBatch.Draw(m_Spaceship.Texture, m_Spaceship.Position, Color.White); //no tinting
 
+            spriteBatch.Draw(m_BulletSpaceShip.Texture, m_BulletSpaceShip.Position, m_BulletSpaceShip.Color); //no tinting
+
             int j = 0;
             for (int i = 0; i < 5; i++)
             {
                 for (j = 0; j < 9; j++)
                 {
-                    spriteBatch.Draw(m_EnemiesList[i][j].TextureEnemy, m_EnemiesList[i][j].Position, m_EnemiesList[i][j].Color);
+                    spriteBatch.Draw(m_EnemiesList[i][j].Texture, m_EnemiesList[i][j].Position, m_EnemiesList[i][j].Color);
                 }
             }
 

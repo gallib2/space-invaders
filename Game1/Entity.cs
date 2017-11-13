@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 
 namespace Game1
 {
-    public class Spaceship : Entity
+    public class Entity
     {
-        public float Direction { get; set; }
+        public Vector2 Position { get; set; }
+        public Color Color { get; set; }
+        public Texture2D Texture { get; set; }
     }
 }
