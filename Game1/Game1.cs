@@ -23,15 +23,15 @@ namespace Game1
         List<List<Enemy>> m_EnemiesList = new List<List<Enemy>>();
         public float GapToWall { get; set; }
 
-        Texture2D m_TextureShip;
+
+        Ship m_Ship = new Ship();
+
         Texture2D m_TextureBackground;
 
         Vector2 m_PositionBackground;
-        Vector2 m_PositionShip;
 
         Color m_TintBackground = Color.White;
 
-        float m_ShipDirection = 1f;
 
         public Game1()
         {
@@ -41,6 +41,8 @@ namespace Game1
             Enemy.EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveRegular;
             Enemy.IsEnemyMoveRight = true;
             Enemy.speedMovement = 0.25f;
+
+            m_Ship.Direction = 1f;
 
             this.IsMouseVisible = true;
         }
@@ -53,8 +55,9 @@ namespace Game1
             // TODO: use this.Content to load your game content here
             m_TextureBackground = Content.Load<Texture2D>(@"Sprites\BG_Space01_1024x768");
             m_Enemy.TextureEnemy = Content.Load<Texture2D>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.Enemy1]);
-            m_TextureShip = Content.Load<Texture2D>(@"Sprites\Ship01_32x32");
+            /// m_TextureShip = Content.Load<Texture2D>(@"Sprites\Ship01_32x32");
 
+            m_Ship.Texture = Content.Load<Texture2D>(ImagePathProvider.SpaceShipPathImage);
             loadEnemyContent(5, 9);
 
 
@@ -105,13 +108,13 @@ namespace Game1
             float y = (float)GraphicsDevice.Viewport.Height;
 
             // Offset:
-            x -= m_TextureShip.Width / 2;
-            y -= m_TextureShip.Height / 2;
+            x -= m_Ship.Texture.Width / 2;
+            y -= m_Ship.Texture.Height / 2;
 
             // Put it a little bit higher:
             y -= 30;
 
-            m_PositionShip = new Vector2(x, y);
+            m_Ship.Position = new Vector2(x, y);
 
             m_Enemy.InitPosition();
 
@@ -166,7 +169,7 @@ namespace Game1
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            ImagePathProvider.InitalizeEnemiesDictionary();
+            ImagePathProvider.InitializeImagesPath();
             base.Initialize();
         }
 
@@ -197,29 +200,16 @@ namespace Game1
             }
 
             // move the ship using the GamePad left thumb stick and set viberation according to movement:
-            m_PositionShip.X += currGamePadState.ThumbSticks.Left.X * 120 * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            GamePad.SetVibration(PlayerIndex.One, 0, Math.Abs(currGamePadState.ThumbSticks.Left.X));
+            ///m_PositionShip.X += currGamePadState.ThumbSticks.Left.X * 120 * (float)gameTime.ElapsedGameTime.TotalSeconds;
+            ///GamePad.SetVibration(PlayerIndex.One, 0, Math.Abs(currGamePadState.ThumbSticks.Left.X));
 
-            // move the ship using the mouse:
-            m_PositionShip.X += GetMousePositionDelta().X;
 
-            // clam the position between screen boundries:
-            m_PositionShip.X = MathHelper.Clamp(m_PositionShip.X, 0, this.GraphicsDevice.Viewport.Width - m_TextureShip.Width);
 
-            // if we hit the wall, lets change direction:
-            if (m_PositionShip.X == 0 || m_PositionShip.X == this.GraphicsDevice.Viewport.Width - m_TextureShip.Width)
-            {
-                m_ShipDirection *= -1f;
-            }
+            shipUpdate(gameTime);
 
             if (isEnemyNextMoveIsWallAndUpdateGap())
             {
                 Enemy.EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveGap;
-
-                //if (isEnemyNextMoveIsFloor())
-                //{
-                //    this.IsGameOver = true;
-                //}
             }
 
             enemyUpdate(gameTime);
@@ -227,6 +217,20 @@ namespace Game1
             base.Update(gameTime);
         }
 
+        private void shipUpdate(GameTime gameTime)
+        {
+            // move the ship using the mouse:
+            m_Ship.Position = new Vector2((m_Ship.Position.X + GetMousePositionDelta().X), m_Ship.Position.Y);
+
+            // clam the position between screen boundries:
+            m_Ship.Position = new Vector2(MathHelper.Clamp(m_Ship.Position.X, 0, this.GraphicsDevice.Viewport.Width - m_Ship.Texture.Width), m_Ship.Position.Y);
+
+            // if we hit the wall, lets change direction:
+            if (m_Ship.Position.X == 0 || m_Ship.Position.X == this.GraphicsDevice.Viewport.Width - m_Ship.Texture.Width)
+            {
+                m_Ship.Direction *= -1f;
+            }
+        }
 
 
         private void handleGameOver()
@@ -353,7 +357,7 @@ namespace Game1
                         Enemy.EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveRegular;
                         Enemy.speedMovement = Enemy.speedMovement * Enemy.sr_TimePercentBetweenJumps;
                         actionOnEveryEnemy(enemyMoveDown);
-                        if(isEnemyNextMoveIsFloor())
+                        if (isEnemyNextMoveIsFloor())
                         {
                             this.IsGameOver = true;
                         }
@@ -430,8 +434,9 @@ namespace Game1
             spriteBatch.Begin();
             spriteBatch.Draw(m_TextureBackground, m_PositionBackground, m_TintBackground); // tinting with alpha channel
             //spriteBatch.Draw(m_Enemy.TextureEnemy, m_Enemy.Position, Color.LightPink); // purple ship
-            spriteBatch.Draw(m_TextureShip, m_PositionShip, Color.White); //no tinting
+            ///spriteBatch.Draw(m_TextureShip, m_PositionShip, Color.White); //no tinting
 
+            spriteBatch.Draw(m_Ship.Texture, m_Ship.Position, Color.White); //no tinting
 
             int j = 0;
             for (int i = 0; i < 5; i++)

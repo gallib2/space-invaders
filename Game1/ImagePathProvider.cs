@@ -9,7 +9,15 @@ namespace Game1
     public static class ImagePathProvider
     {
         public static Dictionary<eEnemyTypes, string> EnemyiesPathImageDictionary { get; set; }
+        public static string BulletPathImage { get; set; }
+        public static string SpaceShipPathImage { get; set; }
 
+        public static void InitializeImagesPath()
+        {
+            InitalizeEnemiesDictionary();
+            BulletPathImage = @"Sprites\Bullet";
+            SpaceShipPathImage = @"Sprites\Ship01_32x32";
+        }
 
         public static void InitalizeEnemiesDictionary()
         {

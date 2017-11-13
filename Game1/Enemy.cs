@@ -12,15 +12,13 @@ namespace Game1
     {
         public Vector2 Position { get; set; }
         public Color Color { get; set; }
-        public bool IsVisible { get; set; }
-
         public Texture2D TextureEnemy { get; set; }
+        public bool IsVisible { get; set; }
         public static eEnemyMovementOptions EnemyMovementStatus { get; set; }
-
         public static bool IsEnemyMoveRight { get; set; }
         public static float Direction { get; set; }
-
         public static float speedMovement { get; set; }
+        
 
         public static readonly float sr_TimePercentBetweenJumps = 0.9f;
 
@@ -36,7 +34,6 @@ namespace Game1
             Position = new Vector2(x, y);
             Direction = 1f;
         }
-        
 
 
         public enum eEnemyMovementOptions
