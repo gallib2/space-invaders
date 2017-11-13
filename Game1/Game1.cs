@@ -24,7 +24,7 @@ namespace Game1
         public float GapToWall { get; set; }
 
 
-        Ship m_Ship = new Ship();
+        Spaceship m_Spaceship = new Spaceship();
 
         Texture2D m_TextureBackground;
 
@@ -42,7 +42,7 @@ namespace Game1
             Enemy.IsEnemyMoveRight = true;
             Enemy.speedMovement = 0.25f;
 
-            m_Ship.Direction = 1f;
+            m_Spaceship.Direction = 1f;
 
             this.IsMouseVisible = true;
         }
@@ -57,7 +57,7 @@ namespace Game1
             m_Enemy.TextureEnemy = Content.Load<Texture2D>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.Enemy1]);
             /// m_TextureShip = Content.Load<Texture2D>(@"Sprites\Ship01_32x32");
 
-            m_Ship.Texture = Content.Load<Texture2D>(ImagePathProvider.SpaceShipPathImage);
+            m_Spaceship.Texture = Content.Load<Texture2D>(ImagePathProvider.SpaceShipPathImage);
             loadEnemyContent(5, 9);
 
 
@@ -108,13 +108,13 @@ namespace Game1
             float y = (float)GraphicsDevice.Viewport.Height;
 
             // Offset:
-            x -= m_Ship.Texture.Width / 2;
-            y -= m_Ship.Texture.Height / 2;
+            x -= m_Spaceship.Texture.Width / 2;
+            y -= m_Spaceship.Texture.Height / 2;
 
             // Put it a little bit higher:
             y -= 30;
 
-            m_Ship.Position = new Vector2(x, y);
+            m_Spaceship.Position = new Vector2(x, y);
 
             m_Enemy.InitPosition();
 
@@ -220,15 +220,15 @@ namespace Game1
         private void shipUpdate(GameTime gameTime)
         {
             // move the ship using the mouse:
-            m_Ship.Position = new Vector2((m_Ship.Position.X + GetMousePositionDelta().X), m_Ship.Position.Y);
+            m_Spaceship.Position = new Vector2((m_Spaceship.Position.X + GetMousePositionDelta().X), m_Spaceship.Position.Y);
 
             // clam the position between screen boundries:
-            m_Ship.Position = new Vector2(MathHelper.Clamp(m_Ship.Position.X, 0, this.GraphicsDevice.Viewport.Width - m_Ship.Texture.Width), m_Ship.Position.Y);
+            m_Spaceship.Position = new Vector2(MathHelper.Clamp(m_Spaceship.Position.X, 0, this.GraphicsDevice.Viewport.Width - m_Spaceship.Texture.Width), m_Spaceship.Position.Y);
 
             // if we hit the wall, lets change direction:
-            if (m_Ship.Position.X == 0 || m_Ship.Position.X == this.GraphicsDevice.Viewport.Width - m_Ship.Texture.Width)
+            if (m_Spaceship.Position.X == 0 || m_Spaceship.Position.X == this.GraphicsDevice.Viewport.Width - m_Spaceship.Texture.Width)
             {
-                m_Ship.Direction *= -1f;
+                m_Spaceship.Direction *= -1f;
             }
         }
 
@@ -436,7 +436,7 @@ namespace Game1
             //spriteBatch.Draw(m_Enemy.TextureEnemy, m_Enemy.Position, Color.LightPink); // purple ship
             ///spriteBatch.Draw(m_TextureShip, m_PositionShip, Color.White); //no tinting
 
-            spriteBatch.Draw(m_Ship.Texture, m_Ship.Position, Color.White); //no tinting
+            spriteBatch.Draw(m_Spaceship.Texture, m_Spaceship.Position, Color.White); //no tinting
 
             int j = 0;
             for (int i = 0; i < 5; i++)

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Game1
 {
-    public class Ship
+    public class Spaceship
     {
         public Vector2 Position { get; set; }
         public Color Color { get; set; }
