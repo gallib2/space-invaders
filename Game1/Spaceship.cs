@@ -11,5 +11,8 @@ namespace Game1
     public class Spaceship : Entity
     {
         public float Direction { get; set; }
+
+        public bool IsPossibleToShoot { get; set; }
+
     }
 }

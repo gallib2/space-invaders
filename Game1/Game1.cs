@@ -15,6 +15,10 @@ namespace Game1
         public delegate bool DelegateCheckToCommit(Enemy enemy);
 
         public bool IsGameOver { get; set; }
+        Random m_RandomTime = new Random();
+
+        MouseState? m_PrevMouseState;
+        KeyboardState? m_PrevKeyBoardStat;
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -26,7 +30,13 @@ namespace Game1
 
         Spaceship m_Spaceship = new Spaceship();
         bool m_IsShooting = false;
-        Bullet m_BulletSpaceShip = new Bullet();
+
+        MotherShip m_MotherShip = new MotherShip();
+        bool m_IsMotherShipNeedToPass = false;
+        int m_PrevTimeMotherShipPass;
+        private int m_TimeMotherShipPass;
+        private const int k_MinTimeMotherShipToPass = 10;
+        private const int k_MaxTimeMotherShipToPass = 15;
 
         Texture2D m_TextureBackground;
         Vector2 m_PositionBackground;
@@ -44,6 +54,9 @@ namespace Game1
 
             m_Spaceship.Direction = 1f;
 
+            MotherShip.speedMovement = 120f;
+            m_TimeMotherShipPass = m_RandomTime.Next(1, k_MinTimeMotherShipToPass);
+
             this.IsMouseVisible = true;
         }
 
@@ -57,9 +70,10 @@ namespace Game1
             m_Enemy.Texture = Content.Load<Texture2D>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.Enemy1]);
             /// m_TextureShip = Content.Load<Texture2D>(@"Sprites\Ship01_32x32");
 
-            m_BulletSpaceShip.Texture = Content.Load<Texture2D>(ImagePathProvider.BulletPathImage);
-            m_BulletSpaceShip.Color = Color.Red;
+            //m_BulletSpaceShip.Texture = Content.Load<Texture2D>(ImagePathProvider.BulletPathImage);
+            //m_BulletSpaceShip.Color = Color.Red;
             m_Spaceship.Texture = Content.Load<Texture2D>(ImagePathProvider.SpaceShipPathImage);
+            m_MotherShip.Texture = Content.Load<Texture2D>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.MotherShip]);
             loadEnemyContent(5, 9);
 
 
@@ -134,6 +148,8 @@ namespace Game1
                 }
             }
 
+            m_MotherShip.Position = initMotherShipPosition();
+
             // 3. Init the bg position:
             m_PositionBackground = Vector2.Zero;
 
@@ -143,7 +159,6 @@ namespace Game1
             m_TintBackground = new Color(bgTint);
         }
 
-        MouseState? m_PrevMouseState;
 
         private Vector2 GetMousePositionDelta()
         {
@@ -194,6 +209,7 @@ namespace Game1
             // get the current input devices state:
             GamePadState currGamePadState = GamePad.GetState(PlayerIndex.One);
             KeyboardState currKeyboardState = Keyboard.GetState();
+            int timeMotherShipToPass = gameTime.TotalGameTime.Seconds - m_PrevTimeMotherShipPass;
 
             // Allows the game to exit by GameButton 'back' button or Esc:
             if (this.IsGameOver || currKeyboardState.IsKeyDown(Keys.Escape))
@@ -205,13 +221,28 @@ namespace Game1
             ///m_PositionShip.X += currGamePadState.ThumbSticks.Left.X * 120 * (float)gameTime.ElapsedGameTime.TotalSeconds;
             ///GamePad.SetVibration(PlayerIndex.One, 0, Math.Abs(currGamePadState.ThumbSticks.Left.X));
 
+            isMotherShipNeedToPass(gameTime, timeMotherShipToPass);
+
+            if (m_IsMotherShipNeedToPass)
+            {
+                if (!motherShipPositionOutOfBoundry())
+                {
+                    m_MotherShip.Position = new Vector2((m_MotherShip.Position.X + (MotherShip.speedMovement * (float)gameTime.ElapsedGameTime.TotalSeconds)), m_MotherShip.Position.Y);
+                }
+                else
+                {
+                    m_MotherShip.Position = initMotherShipPosition();
+                    m_IsMotherShipNeedToPass = false;
+                }
+            }
+
             shipUpdate(gameTime);
 
-            if (m_IsShooting)
-            {
-                // if()  get to ciel OR hit enemy => m_IsShooting = false
-                m_BulletSpaceShip.Position = new Vector2(m_BulletSpaceShip.Position.X, m_BulletSpaceShip.Position.Y - (150 * (float)gameTime.ElapsedGameTime.TotalSeconds));
-            }
+            //if (m_IsShooting)
+            //{
+            //    // if()  get to ciel OR hit enemy => m_IsShooting = false
+            //    m_BulletSpaceShip.Position = new Vector2(m_BulletSpaceShip.Position.X, m_BulletSpaceShip.Position.Y - (150 * (float)gameTime.ElapsedGameTime.TotalSeconds));
+            //}
 
             if (isEnemyNextMoveIsWallAndUpdateGap())
             {
@@ -223,12 +254,62 @@ namespace Game1
             base.Update(gameTime);
         }
 
+        private Vector2 initMotherShipPosition()
+        {
+            return new Vector2((-m_MotherShip.Texture.Width), m_MotherShip.Texture.Height);
+        }
+
+        private bool motherShipPositionOutOfBoundry()
+        {
+            bool isOutOfBoundry = false;
+
+            if (m_MotherShip.Position.X > this.GraphicsDevice.Viewport.Width)
+            {
+                isOutOfBoundry = !isOutOfBoundry;
+            }
+
+            return isOutOfBoundry;
+        }
+
+        double m_TimeToPass = 0;
+        private void isMotherShipNeedToPass(GameTime gameTime, int timeMotherShipToPass)
+        {
+            bool isNeedToPass = false;
+
+            if (!m_IsMotherShipNeedToPass)
+            {
+                m_TimeToPass += gameTime.ElapsedGameTime.TotalSeconds;
+                if (timeMotherShipToPass > 0 && (timeMotherShipToPass % m_TimeMotherShipPass) == 0)
+                {
+                    m_PrevTimeMotherShipPass += m_TimeMotherShipPass;
+                    m_TimeMotherShipPass = m_RandomTime.Next(k_MinTimeMotherShipToPass, k_MaxTimeMotherShipToPass);
+
+                    isNeedToPass = !isNeedToPass;
+                }
+
+                m_IsMotherShipNeedToPass = isNeedToPass;
+            }
+
+        }
+
         private void shipUpdate(GameTime gameTime)
         {
+            KeyboardState currKeyboardState = Keyboard.GetState();
             shootStatus();
 
             // move the ship using the mouse:
             m_Spaceship.Position = new Vector2((m_Spaceship.Position.X + GetMousePositionDelta().X), m_Spaceship.Position.Y);
+
+            if (currKeyboardState.IsKeyDown(Keys.Right) /*&& m_PrevKeyBoardStat != null && m_PrevKeyBoardStat.Value.IsKeyUp(Keys.Right)*/)
+            {
+                m_Spaceship.Position = new Vector2((m_Spaceship.Position.X + 115 * (float)gameTime.ElapsedGameTime.TotalSeconds), m_Spaceship.Position.Y);
+            }
+            if (currKeyboardState.IsKeyDown(Keys.Left) /*&& m_PrevKeyBoardStat != null && m_PrevKeyBoardStat.Value.IsKeyUp(Keys.Right)*/)
+            {
+                m_Spaceship.Position = new Vector2((m_Spaceship.Position.X - 115 * (float)gameTime.ElapsedGameTime.TotalSeconds), m_Spaceship.Position.Y);
+            }
+            m_PrevKeyBoardStat = currKeyboardState;
+
 
             // clam the position between screen boundries:
             m_Spaceship.Position = new Vector2(MathHelper.Clamp(m_Spaceship.Position.X, 0, this.GraphicsDevice.Viewport.Width - m_Spaceship.Texture.Width), m_Spaceship.Position.Y);
@@ -242,15 +323,18 @@ namespace Game1
 
         private void shootStatus()
         {
-            bool isPossibleToShoot = true; // TODO!!!!
+            //bool isPossibleToShoot = true; // TODO!!!!
             MouseState currMouseState = Mouse.GetState();
 
-            if(m_PrevMouseState != null)
+            if (m_PrevMouseState != null)
             {
                 if (currMouseState.LeftButton == ButtonState.Pressed && m_PrevMouseState.Value.LeftButton == ButtonState.Released)
                 {
-                    if (isPossibleToShoot)
+                    if (isPossibleToShoot())
                     {
+                        Bullet m_BulletSpaceShip = new Bullet(Bullet.eBulletType.SpaceShip);
+                        m_BulletSpaceShip.Texture = Content.Load<Texture2D>(ImagePathProvider.BulletPathImage);
+                        m_BulletSpaceShip.Color = Color.Red;
                         m_BulletSpaceShip.Position = new Vector2(m_Spaceship.Position.X, m_Spaceship.Position.Y);
                         m_IsShooting = true;
                     }
@@ -258,6 +342,11 @@ namespace Game1
             }
 
 
+        }
+
+        private bool isPossibleToShoot()
+        {
+            return Bullet.s_NumberOfSpaceShipBullets < 4;
         }
 
         private void handleGameOver()
@@ -328,7 +417,6 @@ namespace Game1
         {
             bool isNextMoveIsWall = false;
             float nextEnemyPosition;
-
 
             if (Enemy.IsEnemyMoveRight)
             {
@@ -465,7 +553,8 @@ namespace Game1
 
             spriteBatch.Draw(m_Spaceship.Texture, m_Spaceship.Position, Color.White); //no tinting
 
-            spriteBatch.Draw(m_BulletSpaceShip.Texture, m_BulletSpaceShip.Position, m_BulletSpaceShip.Color); //no tinting
+            spriteBatch.Draw(m_MotherShip.Texture, m_MotherShip.Position, Color.White);
+            //spriteBatch.Draw(m_BulletSpaceShip.Texture, m_BulletSpaceShip.Position, m_BulletSpaceShip.Color); //no tinting
 
             int j = 0;
             for (int i = 0; i < 5; i++)
