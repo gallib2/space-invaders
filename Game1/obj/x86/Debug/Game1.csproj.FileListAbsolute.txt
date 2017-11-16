@@ -28,3 +28,9 @@ C:\Users\Gallib\Desktop\Game1\Game1\bin\Windows\x86\Debug\Content\Sprites\Enemy0
 C:\Users\Gallib\Desktop\Game1\Game1\bin\Windows\x86\Debug\Content\Sprites\Enemy0301_32x32.xnb
 C:\Users\Gallib\Desktop\Game1\Game1\bin\Windows\x86\Debug\Content\Sprites\MotherShip_32x120.xnb
 C:\Users\Gallib\Desktop\Game1\Game1\bin\Windows\x86\Debug\Content\Sprites\Ship01_32x32.xnb
+C:\Users\Gallib\Desktop\Game1\Game1\bin\Windows\x86\Debug\Content\StarWars\star-wars-death-star-1024×768.xnb
+C:\Users\Gallib\Desktop\Game1\Game1\bin\Windows\x86\Debug\Content\StarWars\bb-8-64X64.xnb
+C:\Users\Gallib\Desktop\Game1\Game1\bin\Windows\x86\Debug\Content\StarWars\bb-8-12864X64t.xnb
+C:\Users\Gallib\Desktop\Game1\Game1\bin\Windows\x86\Debug\Content\StarWars\stormtrooper-128.xnb
+C:\Users\Gallib\Desktop\Game1\Game1\bin\Windows\x86\Debug\Content\StarWars\Star_Wars_-_Darth_Vader.xnb
+C:\Users\Gallib\Desktop\Game1\Game1\bin\Windows\x86\Debug\Content\StarWars\enemy32X32.xnb

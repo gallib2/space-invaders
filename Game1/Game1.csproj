@@ -44,7 +44,8 @@
     <Compile Include="Bullet.cs" />
     <Compile Include="Enemy.cs" />
     <Compile Include="Entity.cs" />
-    <Compile Include="Game1.cs" />
+    <Compile Include="IGameObjects.cs" />
+    <Compile Include="SpaceInvaders.cs" />
     <Compile Include="ImagePathProvider.cs" />
     <Compile Include="MotherShip.cs" />
     <Compile Include="Program.cs" />

@@ -14,7 +14,7 @@ namespace Game1
 
         private bool disposed = false;
 
-        public Bullet(eBulletType bulletType)
+        public Bullet(eBulletType bulletType, SpaceInvaders spaceInveders) : base(spaceInveders)
         {
             this.BullletType = bulletType;
             if(bulletType == eBulletType.SpaceShip)
