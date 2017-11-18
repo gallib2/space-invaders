@@ -24,6 +24,7 @@ namespace Game1
         public override void LoadContent(ContentManager i_content)
         {
             Texture = i_content.Load<Texture2D>(ImagePathProvider.SpaceShipPathImage);
+            Color = Color.White;
         }
 
         public override void Update(GameTime gameTime)
@@ -54,5 +55,9 @@ namespace Game1
                 Direction *= -1f;
             }
         }
+
+        //public override void Draw(GameTime gameTime, SpriteBatch spriteBatch, Entity entity)
+        //{
+        //}
     }
 }

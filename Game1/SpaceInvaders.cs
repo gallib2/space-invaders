@@ -250,32 +250,6 @@ namespace Game1
                 gameComponent.Update(gameTime);
             }
 
-            //m_MotherShip.Update(gameTime);
-            //if (m_IsMotherShipNeedToPass)
-            //{
-            //    if (!motherShipPositionOutOfBoundry())
-            //    {
-            //        m_MotherShip.Position = new Vector2((m_MotherShip.Position.X + (MotherShip.speedMovement * (float)gameTime.ElapsedGameTime.TotalSeconds)), m_MotherShip.Position.Y);
-            //    }
-            //    else
-            //    {
-            //        m_MotherShip.Position = initMotherShipPosition();
-            //        m_IsMotherShipNeedToPass = false;
-            //    }
-            //}
-
-            //shipUpdate(gameTime);
-           // m_Spaceship.Update(gameTime);
-
-            /*
-            if (m_IsShooting)
-            {
-                // if()  get to ciel OR hit enemy => m_IsShooting = false
-                m_BulletSpaceShip.Position = new Vector2(m_BulletSpaceShip.Position.X, m_BulletSpaceShip.Position.Y - (150 * (float)gameTime.ElapsedGameTime.TotalSeconds));
-            }
-            */
-
-
             if (isEnemyNextMoveIsFloor())
             {
                 this.IsGameOver = true;
@@ -510,18 +484,21 @@ namespace Game1
                                                                                            //spriteBatch.Draw(m_Enemy.TextureEnemy, m_Enemy.Position, Color.LightPink); // purple ship
                                                                                            ///spriteBatch.Draw(m_TextureShip, m_PositionShip, Color.White); //no tinting
 
-            spriteBatch.Draw(m_Spaceship.Texture, m_Spaceship.Position, Color.White); //no tinting
 
-
-            spriteBatch.Draw(m_MotherShip.Texture, m_MotherShip.Position, Color.White);
+            //spriteBatch.Draw(m_Spaceship.Texture, m_Spaceship.Position, m_Spaceship.Color); //no tinting
+            //spriteBatch.Draw(m_MotherShip.Texture, m_MotherShip.Position, m_MotherShip.Color);
             //spriteBatch.Draw(m_BulletSpaceShip.Texture, m_BulletSpaceShip.Position, m_BulletSpaceShip.Color); //no tinting
 
-            int j = 0;
-            for (int i = 0; i < 5; i++)
+            foreach (Entity gameComponent in m_gameComponents)
             {
-                for (j = 0; j < 9; j++)
+                gameComponent.Draw(gameTime, spriteBatch, gameComponent);
+            }
+
+            foreach (var enemiesRow in m_EnemiesList)
+            {
+                foreach (var enemy in enemiesRow)
                 {
-                    spriteBatch.Draw(m_EnemiesList[i][j].Texture, m_EnemiesList[i][j].Position, m_EnemiesList[i][j].Color);
+                    enemy.Draw(gameTime, spriteBatch, enemy);
                 }
             }
 

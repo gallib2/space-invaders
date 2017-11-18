@@ -63,6 +63,11 @@ namespace Game1
             }
         }
 
+        //public override void Draw(GameTime gameTime, SpriteBatch spriteBatch, Entity entity)
+        //{
+        //    spriteBatch.Draw(entity.Texture, entity.Position, entity.Color);
+        //}
+
         //public void enemyMoveGap()
         //{
         //    Position = new Vector2(Position.X + this.Game.GapToWall, Position.Y);

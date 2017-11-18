@@ -37,9 +37,9 @@ namespace Game1
             
         }
 
-        public void Draw(GameTime gameTime, SpriteBatch spriteBatch)
+        public void Draw(GameTime gameTime, SpriteBatch spriteBatch, Entity entity)
         {
-            throw new NotImplementedException();
+            spriteBatch.Draw(entity.Texture, entity.Position, entity.Color);
         }
         
     }
