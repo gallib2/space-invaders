@@ -26,19 +26,6 @@ namespace Game1
             Direction = 1f;
         }
 
-        public void InitPosition()
-        {
-            // Init the enemy position
-            float x = Texture.Width;
-            float y = Texture.Height * 3;
-
-            // Offset:
-            x -= Texture.Width / 2;
-
-            Position = new Vector2(x, y);
-            Direction = 1f;
-        }
-
 
         public enum eEnemyMovementOptions
         {
@@ -76,52 +63,20 @@ namespace Game1
             }
         }
 
-        public void enemyMoveGap()
-        {
-            Position = new Vector2(Position.X + this.Game.GapToWall, Position.Y);
-        }
+        //public void enemyMoveGap()
+        //{
+        //    Position = new Vector2(Position.X + this.Game.GapToWall, Position.Y);
+        //}
 
-        private void enemyMoveDown()
-        {
-            Position = new Vector2(Position.X, Position.Y + Texture.Height / 2);
-        }
+        //private void enemyMoveDown()
+        //{
+        //    Position = new Vector2(Position.X, Position.Y + Texture.Height / 2);
+        //}
 
         //private void enemyMoveRegular()
         //{
         //    Position = new Vector2(Position.X + (Enemy.Direction) * (Texture.Width / 2), Position.Y);
         //}
-
-        //private bool isEnemyNextMoveIsWallAndUpdateGap()
-        //{
-        //    bool isNextMoveIsWall = false;
-        //    float nextEnemyPosition;
-
-        //    if (Enemy.IsEnemyMoveRight)
-        //    {
-        //        // isNextMoveIsWall = checkConditionOnEveryEnemy(isEnemyNextRightMoveIsWallAndUpdateGap);
-        //        nextEnemyPosition = Position.X + (Texture.Width / 2);
-        //        if (nextEnemyPosition > this.Game.GraphicsDevice.Viewport.Width - Texture.Width)
-        //        {
-        //            isNextMoveIsWall = true;
-        //            this.GapToWall = this.Game.GraphicsDevice.Viewport.Width - Position.X - Texture.Width;
-        //        }
-        //    }
-        //    else
-        //    {
-        //        //isNextMoveIsWall = checkConditionOnEveryEnemy(isEnemyNextLeftMoveIsWallAndUpdateGap);
-        //        nextEnemyPosition = Position.X - (Texture.Width / 2);
-        //        if (nextEnemyPosition < 0)
-        //        {
-        //            isNextMoveIsWall = true;
-        //            this.GapToWall = -Position.X;
-        //        }
-        //    }
-
-        //    return isNextMoveIsWall;
-        //}
-
-
-
 
     }
 }

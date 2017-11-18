@@ -21,8 +21,8 @@ namespace Game1
         public bool IsGameOver { get; set; }
         Random m_RandomTime = new Random();
 
-        MouseState? m_PrevMouseState;
-        KeyboardState? m_PrevKeyBoardStat;
+        public MouseState? PrevMouseState { get; set; }
+        public KeyboardState? PrevKeyBoardStat { get; set; }
 
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
@@ -39,7 +39,7 @@ namespace Game1
         bool m_IsShooting = false;
 
         MotherShip m_MotherShip;
-        bool m_IsMotherShipNeedToPass = false;
+        public bool MotherShipNeedToPass { get; set; }
         int m_PrevTimeMotherShipPass;
         private int m_TimeMotherShipPass;
         private const int k_MinTimeMotherShipToPass = 10;
@@ -75,6 +75,7 @@ namespace Game1
             m_gameComponents.Add(m_Spaceship);
 
             m_MotherShip = new MotherShip(this);
+            MotherShipNeedToPass = false;
             MotherShip.speedMovement = 120f;
             m_TimeMotherShipPass = m_RandomTime.Next(1, k_MinTimeMotherShipToPass);
 
@@ -170,7 +171,7 @@ namespace Game1
                 }
             }
 
-            m_MotherShip.Position = initMotherShipPosition();
+            m_MotherShip.Position = InitMotherShipPosition();
 
             // 3. Init the bg position:
             m_PositionBackground = Vector2.Zero;
@@ -182,19 +183,19 @@ namespace Game1
         }
 
 
-        private Vector2 GetMousePositionDelta()
+        public Vector2 GetMousePositionDelta()
         {
             Vector2 retVal = Vector2.Zero;
 
             MouseState currState = Mouse.GetState();
 
-            if (m_PrevMouseState != null)
+            if (PrevMouseState != null)
             {
-                retVal.X = (currState.X - m_PrevMouseState.Value.X);
-                retVal.Y = (currState.Y - m_PrevMouseState.Value.Y);
+                retVal.X = (currState.X - PrevMouseState.Value.X);
+                retVal.Y = (currState.Y - PrevMouseState.Value.Y);
             }
 
-            m_PrevMouseState = currState;
+            PrevMouseState = currState;
 
             return retVal;
         }
@@ -240,27 +241,31 @@ namespace Game1
             {
                 handleGameOver();
             }
-
-            // move the ship using the GamePad left thumb stick and set viberation according to movement:
-            ///m_PositionShip.X += currGamePadState.ThumbSticks.Left.X * 120 * (float)gameTime.ElapsedGameTime.TotalSeconds;
-            ///GamePad.SetVibration(PlayerIndex.One, 0, Math.Abs(currGamePadState.ThumbSticks.Left.X));
+            
 
             isMotherShipNeedToPass(gameTime, timeMotherShipToPass);
 
-            if (m_IsMotherShipNeedToPass)
+            foreach (Entity gameComponent in m_gameComponents)
             {
-                if (!motherShipPositionOutOfBoundry())
-                {
-                    m_MotherShip.Position = new Vector2((m_MotherShip.Position.X + (MotherShip.speedMovement * (float)gameTime.ElapsedGameTime.TotalSeconds)), m_MotherShip.Position.Y);
-                }
-                else
-                {
-                    m_MotherShip.Position = initMotherShipPosition();
-                    m_IsMotherShipNeedToPass = false;
-                }
+                gameComponent.Update(gameTime);
             }
 
-            shipUpdate(gameTime);
+            //m_MotherShip.Update(gameTime);
+            //if (m_IsMotherShipNeedToPass)
+            //{
+            //    if (!motherShipPositionOutOfBoundry())
+            //    {
+            //        m_MotherShip.Position = new Vector2((m_MotherShip.Position.X + (MotherShip.speedMovement * (float)gameTime.ElapsedGameTime.TotalSeconds)), m_MotherShip.Position.Y);
+            //    }
+            //    else
+            //    {
+            //        m_MotherShip.Position = initMotherShipPosition();
+            //        m_IsMotherShipNeedToPass = false;
+            //    }
+            //}
+
+            //shipUpdate(gameTime);
+           // m_Spaceship.Update(gameTime);
 
             /*
             if (m_IsShooting)
@@ -289,10 +294,8 @@ namespace Game1
                         }
                     }
                 }
-                // Enemy.EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveGap;
             }
 
-            // enemyUpdate(gameTime);
             foreach (var enemiesRow in m_EnemiesList)
             {
                 foreach (var enemy in enemiesRow)
@@ -316,12 +319,12 @@ namespace Game1
             }
         }
 
-        private Vector2 initMotherShipPosition()
+        public Vector2 InitMotherShipPosition()
         {
             return new Vector2((-m_MotherShip.Texture.Width), m_MotherShip.Texture.Height);
         }
 
-        private bool motherShipPositionOutOfBoundry()
+        public bool MotherShipPositionOutOfBoundry()
         {
             bool isOutOfBoundry = false;
 
@@ -338,7 +341,7 @@ namespace Game1
         {
             bool isNeedToPass = false;
 
-            if (!m_IsMotherShipNeedToPass)
+            if (!MotherShipNeedToPass)
             {
                 m_TimeToPass += gameTime.ElapsedGameTime.TotalSeconds;
                 if (timeMotherShipToPass > 0 && (timeMotherShipToPass % m_TimeMotherShipPass) == 0)
@@ -349,38 +352,38 @@ namespace Game1
                     isNeedToPass = !isNeedToPass;
                 }
 
-                m_IsMotherShipNeedToPass = isNeedToPass;
+                MotherShipNeedToPass = isNeedToPass;
             }
 
         }
 
         private void shipUpdate(GameTime gameTime)
         {
-            KeyboardState currKeyboardState = Keyboard.GetState();
-            shootStatus();
+            //KeyboardState currKeyboardState = Keyboard.GetState();
+            //shootStatus();
 
-            // move the ship using the mouse:
-            m_Spaceship.Position = new Vector2((m_Spaceship.Position.X + GetMousePositionDelta().X), m_Spaceship.Position.Y);
+            //// move the ship using the mouse:
+            //m_Spaceship.Position = new Vector2((m_Spaceship.Position.X + GetMousePositionDelta().X), m_Spaceship.Position.Y);
 
-            if (currKeyboardState.IsKeyDown(Keys.Right) /*&& m_PrevKeyBoardStat != null && m_PrevKeyBoardStat.Value.IsKeyUp(Keys.Right)*/)
-            {
-                m_Spaceship.Position = new Vector2((m_Spaceship.Position.X + 115 * (float)gameTime.ElapsedGameTime.TotalSeconds), m_Spaceship.Position.Y);
-            }
-            if (currKeyboardState.IsKeyDown(Keys.Left) /*&& m_PrevKeyBoardStat != null && m_PrevKeyBoardStat.Value.IsKeyUp(Keys.Right)*/)
-            {
-                m_Spaceship.Position = new Vector2((m_Spaceship.Position.X - 115 * (float)gameTime.ElapsedGameTime.TotalSeconds), m_Spaceship.Position.Y);
-            }
-            m_PrevKeyBoardStat = currKeyboardState;
+            //if (currKeyboardState.IsKeyDown(Keys.Right) /*&& m_PrevKeyBoardStat != null && m_PrevKeyBoardStat.Value.IsKeyUp(Keys.Right)*/)
+            //{
+            //    m_Spaceship.Position = new Vector2((m_Spaceship.Position.X + 115 * (float)gameTime.ElapsedGameTime.TotalSeconds), m_Spaceship.Position.Y);
+            //}
+            //if (currKeyboardState.IsKeyDown(Keys.Left) /*&& m_PrevKeyBoardStat != null && m_PrevKeyBoardStat.Value.IsKeyUp(Keys.Right)*/)
+            //{
+            //    m_Spaceship.Position = new Vector2((m_Spaceship.Position.X - 115 * (float)gameTime.ElapsedGameTime.TotalSeconds), m_Spaceship.Position.Y);
+            //}
+            //m_PrevKeyBoardStat = currKeyboardState;
 
 
-            // clam the position between screen boundries:
-            m_Spaceship.Position = new Vector2(MathHelper.Clamp(m_Spaceship.Position.X, 0, this.GraphicsDevice.Viewport.Width - m_Spaceship.Texture.Width), m_Spaceship.Position.Y);
+            //// clam the position between screen boundries:
+            //m_Spaceship.Position = new Vector2(MathHelper.Clamp(m_Spaceship.Position.X, 0, this.GraphicsDevice.Viewport.Width - m_Spaceship.Texture.Width), m_Spaceship.Position.Y);
 
-            // if we hit the wall, lets change direction:
-            if (m_Spaceship.Position.X == 0 || m_Spaceship.Position.X == this.GraphicsDevice.Viewport.Width - m_Spaceship.Texture.Width)
-            {
-                m_Spaceship.Direction *= -1f;
-            }
+            //// if we hit the wall, lets change direction:
+            //if (m_Spaceship.Position.X == 0 || m_Spaceship.Position.X == this.GraphicsDevice.Viewport.Width - m_Spaceship.Texture.Width)
+            //{
+            //    m_Spaceship.Direction *= -1f;
+            //}
         }
 
         private void shootStatus()
@@ -388,9 +391,9 @@ namespace Game1
             //bool isPossibleToShoot = true; // TODO!!!!
             MouseState currMouseState = Mouse.GetState();
 
-            if (m_PrevMouseState != null)
+            if (PrevMouseState != null)
             {
-                if (currMouseState.LeftButton == ButtonState.Pressed && m_PrevMouseState.Value.LeftButton == ButtonState.Released)
+                if (currMouseState.LeftButton == ButtonState.Pressed && PrevMouseState.Value.LeftButton == ButtonState.Released)
                 {
                     if (isPossibleToShoot())
                     {
@@ -448,32 +451,6 @@ namespace Game1
             return isNextMoveIsFloor;
         }
 
-        private bool isEnemyNextRightMoveIsWallAndUpdateGap(Enemy enemy)
-        {
-            float nextEnemyPosition = enemy.Position.X + (enemy.Position.X / 2);
-            bool isNextMoveIsWall = false;
-            if (nextEnemyPosition > this.GraphicsDevice.Viewport.Width - enemy.Texture.Width)
-            {
-                isNextMoveIsWall = true;
-                this.GapToWall = this.GraphicsDevice.Viewport.Width - enemy.Position.X - enemy.Texture.Width;
-            }
-
-            return isNextMoveIsWall;
-        }
-
-        private bool isEnemyNextLeftMoveIsWallAndUpdateGap(Enemy enemy)
-        {
-            float nextEnemyPosition = enemy.Position.X - (enemy.Texture.Width / 2);
-            bool isNextMoveIsWall = false;
-            if (nextEnemyPosition < 0)
-            {
-                isNextMoveIsWall = true;
-                this.GapToWall = -enemy.Position.X;
-            }
-
-            return isNextMoveIsWall;
-        }
-
         private bool isEnemyNextMoveIsWallAndUpdateGap()
         {
             bool isNextMoveIsWall = false;
@@ -516,88 +493,6 @@ namespace Game1
             }
 
             return isNextMoveIsWall;
-        }
-
-        double m_TimeToNextBlink = 0;
-
-        private void enemyUpdate(GameTime gameTime)
-        {
-            //m_TimeToNextBlink += gameTime.ElapsedGameTime.TotalSeconds;
-
-            //if (m_TimeToNextBlink >= Enemy.speedMovement)
-            //{
-            //    // m_IsMsgVisible = !m_IsMsgVisible;
-            //    m_TimeToNextBlink -= Enemy.speedMovement;
-
-            //    switch (Enemy.EnemyMovementStatus)
-            //    {
-            //        case Enemy.eEnemyMovementOptions.MoveDown:
-            //            Enemy.Direction *= -1f;
-            //            Enemy.EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveRegular;
-            //            Enemy.speedMovement = Enemy.speedMovement * Enemy.sr_TimePercentBetweenJumps;
-            //            actionOnEveryEnemy(enemyMoveDown);
-            //            if (isEnemyNextMoveIsFloor())
-            //            {
-            //                this.IsGameOver = true;
-            //            }
-            //            break;
-            //        case Enemy.eEnemyMovementOptions.MoveGap:
-            //            actionOnEveryEnemy(enemyMoveGap);
-            //            Enemy.EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveDown;
-            //            Enemy.IsEnemyMoveRight = !Enemy.IsEnemyMoveRight;
-            //            break;
-            //        case Enemy.eEnemyMovementOptions.MoveRegular:
-            //            actionOnEveryEnemy(enemyMoveRegular);
-            //            break;
-            //        default:
-            //            break;
-            //    }
-            //}
-        }
-
-        //public void enemyMoveGap(Enemy enemy)
-        //{
-        //    enemy.Position = new Vector2(enemy.Position.X + this.GapToWall, enemy.Position.Y);
-        //}
-
-        //private void enemyMoveDown(Enemy enemy)
-        //{
-        //    enemy.Position = new Vector2(enemy.Position.X, enemy.Position.Y + enemy.Texture.Height / 2);
-        //}
-
-        //private void enemyMoveRegular(Enemy enemy)
-        //{
-        //    enemy.Position = new Vector2(enemy.Position.X + (Enemy.Direction) * (enemy.Texture.Width / 2), enemy.Position.Y);
-        //}
-
-        //private void actionOnEveryEnemy(DelegateActionToCommit actionsToCommit)
-        //{
-        //    foreach (var enemiesRow in m_EnemiesList)
-        //    {
-        //        foreach (var enemy in enemiesRow)
-        //        {
-        //            actionsToCommit(enemy as Enemy);
-        //        }
-        //    }
-        //}
-
-        private bool checkConditionOnEveryEnemy(DelegateCheckToCommit checkToCommit)
-        {
-            bool answerOfCheckToCommit = false;
-
-            foreach (var enemiesRow in m_EnemiesList)
-            {
-                foreach (var enemy in enemiesRow)
-                {
-                    answerOfCheckToCommit = checkToCommit(enemy as Enemy);
-                    if (answerOfCheckToCommit) // if one of them return true then stop to ask
-                    {
-                        break;
-                    }
-                }
-            }
-
-            return answerOfCheckToCommit;
         }
 
         #endregion

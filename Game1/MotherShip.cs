@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -22,5 +23,20 @@ namespace Game1
             Texture = i_content.Load<Texture2D>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.MotherShip]);
         }
 
+        public override void Update(GameTime gameTime)
+        {
+            if (Game.MotherShipNeedToPass)
+            {
+                if (!Game.MotherShipPositionOutOfBoundry())
+                {
+                    Position = new Vector2((Position.X + (MotherShip.speedMovement * (float)gameTime.ElapsedGameTime.TotalSeconds)), Position.Y);
+                }
+                else
+                {
+                    Position = Game.InitMotherShipPosition();
+                    Game.MotherShipNeedToPass = false;
+                }
+            }
+        }
     }
 }
