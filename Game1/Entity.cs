@@ -15,11 +15,11 @@ namespace Game1
         public Color Color { get; set; }
         public Texture2D Texture { get; set; }
 
-        public SpaceInvaders Game { get; set; }
+        public Game Game { get; set; }
 
-        public Entity(SpaceInvaders spaceInveders)
+        public Entity(Game game)
         {
-            this.Game = spaceInveders;
+            this.Game = game;
         }
 
         public virtual void LoadContent(ContentManager i_content)

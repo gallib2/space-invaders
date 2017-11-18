@@ -29,21 +29,20 @@ namespace Game1
 
         public override void Update(GameTime gameTime)
         {
-            KeyboardState currKeyboardState = Keyboard.GetState();
-            //shootStatus();
+            (Game as SpaceInvaders).shootStatus(this);
 
             // move the ship using the mouse:
-            Position = new Vector2((Position.X + Game.GetMousePositionDelta().X), Position.Y);
+            Position = new Vector2((Position.X + InputStateProvider.GetMousePositionDelta().X), Position.Y);
 
-            if (currKeyboardState.IsKeyDown(Keys.Right) /*&& m_PrevKeyBoardStat != null && m_PrevKeyBoardStat.Value.IsKeyUp(Keys.Right)*/)
+            if ( InputStateProvider.CurrKeyboardState.IsKeyDown(Keys.Right) /*&& m_PrevKeyBoardStat != null && m_PrevKeyBoardStat.Value.IsKeyUp(Keys.Right)*/)
             {
                 Position = new Vector2((Position.X + 115 * (float)gameTime.ElapsedGameTime.TotalSeconds), Position.Y);
             }
-            if (currKeyboardState.IsKeyDown(Keys.Left) /*&& m_PrevKeyBoardStat != null && m_PrevKeyBoardStat.Value.IsKeyUp(Keys.Right)*/)
+            if (InputStateProvider.CurrKeyboardState.IsKeyDown(Keys.Left) /*&& m_PrevKeyBoardStat != null && m_PrevKeyBoardStat.Value.IsKeyUp(Keys.Right)*/)
             {
                 Position = new Vector2((Position.X - 115 * (float)gameTime.ElapsedGameTime.TotalSeconds), Position.Y);
             }
-            Game.PrevKeyBoardStat = currKeyboardState;
+            InputStateProvider.PrevKeyBoardStat = InputStateProvider.CurrKeyboardState;
 
 
             // clam the position between screen boundries:
@@ -56,8 +55,5 @@ namespace Game1
             }
         }
 
-        //public override void Draw(GameTime gameTime, SpriteBatch spriteBatch, Entity entity)
-        //{
-        //}
     }
 }

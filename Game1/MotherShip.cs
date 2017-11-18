@@ -26,16 +26,16 @@ namespace Game1
 
         public override void Update(GameTime gameTime)
         {
-            if (Game.MotherShipNeedToPass)
+            if ((Game as SpaceInvaders).MotherShipNeedToPass)
             {
-                if (!Game.MotherShipPositionOutOfBoundry())
+                if (!(Game as SpaceInvaders).MotherShipPositionOutOfBoundry())
                 {
                     Position = new Vector2((Position.X + (MotherShip.speedMovement * (float)gameTime.ElapsedGameTime.TotalSeconds)), Position.Y);
                 }
                 else
                 {
-                    Position = Game.InitMotherShipPosition();
-                    Game.MotherShipNeedToPass = false;
+                    Position = (Game as SpaceInvaders).InitMotherShipPosition();
+                    (Game as SpaceInvaders).MotherShipNeedToPass = false;
                 }
             }
         }

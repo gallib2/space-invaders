@@ -6,9 +6,6 @@ using System.Collections.Generic;
 
 namespace Game1
 {
-    /// <summary>
-    /// This is the main type for your game.
-    /// </summary>
     public class SpaceInvaders : Game
     {
         public delegate void DelegateActionToCommit(Enemy enemy);
@@ -21,9 +18,6 @@ namespace Game1
         public bool IsGameOver { get; set; }
         Random m_RandomTime = new Random();
 
-        public MouseState? PrevMouseState { get; set; }
-        public KeyboardState? PrevKeyBoardStat { get; set; }
-
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
@@ -34,12 +28,12 @@ namespace Game1
         int m_EnemyNumOfRows = 5;
         int m_EnemyNumOfColumns = 9;
 
-
         Spaceship m_Spaceship;
         bool m_IsShooting = false;
 
         MotherShip m_MotherShip;
         public bool MotherShipNeedToPass { get; set; }
+        double m_TimeToPass = 0;
         int m_PrevTimeMotherShipPass;
         private int m_TimeMotherShipPass;
         private const int k_MinTimeMotherShipToPass = 10;
@@ -95,50 +89,19 @@ namespace Game1
             //m_BulletSpaceShip.Texture = Content.Load<Texture2D>(ImagePathProvider.BulletPathImage);
             //m_BulletSpaceShip.Color = Color.Red;
 
-            foreach (Entity gameComponent in m_gameComponents)
+            for (int i = 0; i < m_gameComponents.Count; i++)
             {
-                gameComponent.LoadContent(Content);
+                m_gameComponents[i].LoadContent(Content);
             }
+
+            //foreach (Entity gameComponent in m_gameComponents)
+            //{
+            //    gameComponent.LoadContent(Content);
+            //}
 
             loadEnemyContent();
 
             InitPositions();
-        }
-
-        private void loadEnemyContent()
-        {
-            int i = 0;
-
-            foreach (var enemiesRow in m_EnemiesList)
-            {
-                foreach (var enemy in enemiesRow)
-                {
-                    KeyValuePair<string, Color> imageAndColorToLoad = getEnemyImageAndColor(i);
-                    enemy.Texture = Content.Load<Texture2D>(imageAndColorToLoad.Key);
-                    enemy.Color = imageAndColorToLoad.Value;
-                }
-                i++;
-            }
-        }
-
-        private KeyValuePair<string, Color> getEnemyImageAndColor(int i)
-        {
-            KeyValuePair<string, Color> imageAndColorToLoad;
-
-            if (i == 0)
-            {
-                imageAndColorToLoad = new KeyValuePair<string, Color>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.Enemy1], Color.LightPink);
-            }
-            else if (i == 1 || i == 2)
-            {
-                imageAndColorToLoad = new KeyValuePair<string, Color>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.Enemy2], Color.LightBlue);
-            }
-            else
-            {
-                imageAndColorToLoad = new KeyValuePair<string, Color>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.Enemy3], Color.White);
-            }
-
-            return imageAndColorToLoad;
         }
 
         private void InitPositions()
@@ -182,24 +145,6 @@ namespace Game1
             m_TintBackground = new Color(bgTint);
         }
 
-
-        public Vector2 GetMousePositionDelta()
-        {
-            Vector2 retVal = Vector2.Zero;
-
-            MouseState currState = Mouse.GetState();
-
-            if (PrevMouseState != null)
-            {
-                retVal.X = (currState.X - PrevMouseState.Value.X);
-                retVal.Y = (currState.Y - PrevMouseState.Value.Y);
-            }
-
-            PrevMouseState = currState;
-
-            return retVal;
-        }
-
         /// <summary>
         /// Allows the game to perform any initialization it needs to before starting to run.
         /// This is where it can query for any required services and load any non-graphic
@@ -232,22 +177,25 @@ namespace Game1
         protected override void Update(GameTime gameTime)
         {
             // get the current input devices state:
-            GamePadState currGamePadState = GamePad.GetState(PlayerIndex.One);
-            KeyboardState currKeyboardState = Keyboard.GetState();
             int timeMotherShipToPass = gameTime.TotalGameTime.Seconds - m_PrevTimeMotherShipPass;
 
             // Allows the game to exit by GameButton 'back' button or Esc:
-            if (this.IsGameOver || currKeyboardState.IsKeyDown(Keys.Escape))
+            if (this.IsGameOver || InputStateProvider.CurrKeyboardState.IsKeyDown(Keys.Escape))
             {
                 handleGameOver();
             }
-            
 
             isMotherShipNeedToPass(gameTime, timeMotherShipToPass);
 
-            foreach (Entity gameComponent in m_gameComponents)
+            // update game components
+            //foreach (Entity gameComponent in m_gameComponents)
+            //{
+            //    gameComponent.Update(gameTime);
+            //}
+
+            for (int i = 0; i < m_gameComponents.Count; i++)
             {
-                gameComponent.Update(gameTime);
+                m_gameComponents[i].Update(gameTime);
             }
 
             if (isEnemyNextMoveIsFloor())
@@ -255,28 +203,9 @@ namespace Game1
                 this.IsGameOver = true;
             }
 
-            if (IsCanEnemyMatrixMoveRegular)
-            {
-                isEnemyNextMoveIsWallAndUpdateGap();
-                if (!IsCanEnemyMatrixMoveRegular)
-                {
-                    foreach (var enemiesRow in m_EnemiesList)
-                    {
-                        foreach (var enemy in enemiesRow)
-                        {
-                            (enemy as Enemy).EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveGap;
-                        }
-                    }
-                }
-            }
+            checkIfEnemyNeedMoveGapAndUpdate();
 
-            foreach (var enemiesRow in m_EnemiesList)
-            {
-                foreach (var enemy in enemiesRow)
-                {
-                    enemy.Update(gameTime);
-                }
-            }
+            enemyUpdate(gameTime);
 
             base.Update(gameTime);
 
@@ -293,88 +222,21 @@ namespace Game1
             }
         }
 
-        public Vector2 InitMotherShipPosition()
-        {
-            return new Vector2((-m_MotherShip.Texture.Width), m_MotherShip.Texture.Height);
-        }
-
-        public bool MotherShipPositionOutOfBoundry()
-        {
-            bool isOutOfBoundry = false;
-
-            if (m_MotherShip.Position.X > this.GraphicsDevice.Viewport.Width)
-            {
-                isOutOfBoundry = !isOutOfBoundry;
-            }
-
-            return isOutOfBoundry;
-        }
-
-        double m_TimeToPass = 0;
-        private void isMotherShipNeedToPass(GameTime gameTime, int timeMotherShipToPass)
-        {
-            bool isNeedToPass = false;
-
-            if (!MotherShipNeedToPass)
-            {
-                m_TimeToPass += gameTime.ElapsedGameTime.TotalSeconds;
-                if (timeMotherShipToPass > 0 && (timeMotherShipToPass % m_TimeMotherShipPass) == 0)
-                {
-                    m_PrevTimeMotherShipPass += m_TimeMotherShipPass;
-                    m_TimeMotherShipPass = m_RandomTime.Next(k_MinTimeMotherShipToPass, k_MaxTimeMotherShipToPass);
-
-                    isNeedToPass = !isNeedToPass;
-                }
-
-                MotherShipNeedToPass = isNeedToPass;
-            }
-
-        }
-
-        private void shipUpdate(GameTime gameTime)
-        {
-            //KeyboardState currKeyboardState = Keyboard.GetState();
-            //shootStatus();
-
-            //// move the ship using the mouse:
-            //m_Spaceship.Position = new Vector2((m_Spaceship.Position.X + GetMousePositionDelta().X), m_Spaceship.Position.Y);
-
-            //if (currKeyboardState.IsKeyDown(Keys.Right) /*&& m_PrevKeyBoardStat != null && m_PrevKeyBoardStat.Value.IsKeyUp(Keys.Right)*/)
-            //{
-            //    m_Spaceship.Position = new Vector2((m_Spaceship.Position.X + 115 * (float)gameTime.ElapsedGameTime.TotalSeconds), m_Spaceship.Position.Y);
-            //}
-            //if (currKeyboardState.IsKeyDown(Keys.Left) /*&& m_PrevKeyBoardStat != null && m_PrevKeyBoardStat.Value.IsKeyUp(Keys.Right)*/)
-            //{
-            //    m_Spaceship.Position = new Vector2((m_Spaceship.Position.X - 115 * (float)gameTime.ElapsedGameTime.TotalSeconds), m_Spaceship.Position.Y);
-            //}
-            //m_PrevKeyBoardStat = currKeyboardState;
-
-
-            //// clam the position between screen boundries:
-            //m_Spaceship.Position = new Vector2(MathHelper.Clamp(m_Spaceship.Position.X, 0, this.GraphicsDevice.Viewport.Width - m_Spaceship.Texture.Width), m_Spaceship.Position.Y);
-
-            //// if we hit the wall, lets change direction:
-            //if (m_Spaceship.Position.X == 0 || m_Spaceship.Position.X == this.GraphicsDevice.Viewport.Width - m_Spaceship.Texture.Width)
-            //{
-            //    m_Spaceship.Direction *= -1f;
-            //}
-        }
-
-        private void shootStatus()
+        public void shootStatus(Entity entity)
         {
             //bool isPossibleToShoot = true; // TODO!!!!
-            MouseState currMouseState = Mouse.GetState();
 
-            if (PrevMouseState != null)
+            if (InputStateProvider.PrevMouseState != null)
             {
-                if (currMouseState.LeftButton == ButtonState.Pressed && PrevMouseState.Value.LeftButton == ButtonState.Released)
+                if (InputStateProvider.CurrentMouseState.LeftButton == ButtonState.Pressed && InputStateProvider.PrevMouseState.Value.LeftButton == ButtonState.Released)
                 {
                     if (isPossibleToShoot())
                     {
-                        Bullet m_BulletSpaceShip = new Bullet(Bullet.eBulletType.SpaceShip, this);
+                        Bullet m_BulletSpaceShip = new Bullet(Bullet.eBulletType.SpaceShip, this); // TODO
                         m_BulletSpaceShip.Texture = Content.Load<Texture2D>(ImagePathProvider.BulletPathImage);
                         m_BulletSpaceShip.Color = Color.Red;
-                        m_BulletSpaceShip.Position = new Vector2(m_Spaceship.Position.X, m_Spaceship.Position.Y);
+                        m_BulletSpaceShip.Position = new Vector2(entity.Position.X + entity.Texture.Width/2 - 1 , entity.Position.Y);
+                        m_gameComponents.Add(m_BulletSpaceShip);
                         m_IsShooting = true;
                     }
                 }
@@ -403,7 +265,113 @@ namespace Game1
             }
         }
 
-        #region Enemy stuff
+        #region MotherShip
+
+        public Vector2 InitMotherShipPosition()
+        {
+            return new Vector2((-m_MotherShip.Texture.Width), m_MotherShip.Texture.Height);
+        }
+
+        public bool MotherShipPositionOutOfBoundry()
+        {
+            bool isOutOfBoundry = false;
+
+            if (m_MotherShip.Position.X > this.GraphicsDevice.Viewport.Width)
+            {
+                isOutOfBoundry = !isOutOfBoundry;
+            }
+
+            return isOutOfBoundry;
+        }
+
+        private void isMotherShipNeedToPass(GameTime gameTime, int timeMotherShipToPass)
+        {
+            bool isNeedToPass = false;
+
+            if (!MotherShipNeedToPass)
+            {
+                m_TimeToPass += gameTime.ElapsedGameTime.TotalSeconds;
+                if (timeMotherShipToPass > 0 && (timeMotherShipToPass % m_TimeMotherShipPass) == 0)
+                {
+                    m_PrevTimeMotherShipPass += m_TimeMotherShipPass;
+                    m_TimeMotherShipPass = m_RandomTime.Next(k_MinTimeMotherShipToPass, k_MaxTimeMotherShipToPass);
+
+                    isNeedToPass = !isNeedToPass;
+                }
+
+                MotherShipNeedToPass = isNeedToPass;
+            }
+        }
+
+        #endregion
+
+
+        #region Enemy
+
+        private void loadEnemyContent()
+        {
+            int i = 0;
+
+            foreach (var enemiesRow in m_EnemiesList)
+            {
+                foreach (var enemy in enemiesRow)
+                {
+                    KeyValuePair<string, Color> imageAndColorToLoad = getEnemyImageAndColor(i);
+                    enemy.Texture = Content.Load<Texture2D>(imageAndColorToLoad.Key);
+                    enemy.Color = imageAndColorToLoad.Value;
+                }
+                i++;
+            }
+        }
+
+        private KeyValuePair<string, Color> getEnemyImageAndColor(int i)
+        {
+            KeyValuePair<string, Color> imageAndColorToLoad;
+
+            if (i == 0)
+            {
+                imageAndColorToLoad = new KeyValuePair<string, Color>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.Enemy1], Color.LightPink);
+            }
+            else if (i == 1 || i == 2)
+            {
+                imageAndColorToLoad = new KeyValuePair<string, Color>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.Enemy2], Color.LightBlue);
+            }
+            else
+            {
+                imageAndColorToLoad = new KeyValuePair<string, Color>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.Enemy3], Color.White);
+            }
+
+            return imageAndColorToLoad;
+        }
+
+        private void enemyUpdate(GameTime gameTime)
+        {
+            foreach (var enemiesRow in m_EnemiesList)
+            {
+                foreach (var enemy in enemiesRow)
+                {
+                    enemy.Update(gameTime);
+                }
+            }
+        }
+
+        private void checkIfEnemyNeedMoveGapAndUpdate()
+        {
+            if (IsCanEnemyMatrixMoveRegular)
+            {
+                isEnemyNextMoveIsWallAndUpdateGap();
+                if (!IsCanEnemyMatrixMoveRegular)
+                {
+                    foreach (var enemiesRow in m_EnemiesList)
+                    {
+                        foreach (var enemy in enemiesRow)
+                        {
+                            (enemy as Enemy).EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveGap;
+                        }
+                    }
+                }
+            }
+        }
 
         private bool isEnemyNextMoveIsFloor()
         {
@@ -484,14 +452,14 @@ namespace Game1
                                                                                            //spriteBatch.Draw(m_Enemy.TextureEnemy, m_Enemy.Position, Color.LightPink); // purple ship
                                                                                            ///spriteBatch.Draw(m_TextureShip, m_PositionShip, Color.White); //no tinting
 
+            //foreach (Entity gameComponent in m_gameComponents)
+            //{
+            //    gameComponent.Draw(gameTime, spriteBatch, gameComponent);
+            //}
 
-            //spriteBatch.Draw(m_Spaceship.Texture, m_Spaceship.Position, m_Spaceship.Color); //no tinting
-            //spriteBatch.Draw(m_MotherShip.Texture, m_MotherShip.Position, m_MotherShip.Color);
-            //spriteBatch.Draw(m_BulletSpaceShip.Texture, m_BulletSpaceShip.Position, m_BulletSpaceShip.Color); //no tinting
-
-            foreach (Entity gameComponent in m_gameComponents)
+            for (int i = 0; i < m_gameComponents.Count; i++)
             {
-                gameComponent.Draw(gameTime, spriteBatch, gameComponent);
+                m_gameComponents[i].Draw(gameTime, spriteBatch, m_gameComponents[i]);
             }
 
             foreach (var enemiesRow in m_EnemiesList)

@@ -46,12 +46,12 @@ namespace Game1
                         Position = new Vector2(Position.X, Position.Y + Texture.Height / 2);
                         Direction *= -1f;
                         EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveRegular;
-                        Game.IsChangeEnemyDirection = true;
-                        Game.IsChangeEnemiesIntervalBetweenJumps = true;
-                        Game.IsCanEnemyMatrixMoveRegular = true;
+                        (Game as SpaceInvaders).IsChangeEnemyDirection = true;
+                        (Game as SpaceInvaders).IsChangeEnemiesIntervalBetweenJumps = true;
+                        (Game as SpaceInvaders).IsCanEnemyMatrixMoveRegular = true;
                         break;
                     case Enemy.eEnemyMovementOptions.MoveGap:
-                        Position = new Vector2(Position.X + this.Game.GapToWall, Position.Y);
+                        Position = new Vector2(Position.X + (Game as SpaceInvaders).GapToWall, Position.Y);
                         EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveDown;
                         break;
                     case Enemy.eEnemyMovementOptions.MoveRegular:
