@@ -47,6 +47,7 @@
     <Compile Include="GameAssets.cs" />
     <Compile Include="IGameObjects.cs" />
     <Compile Include="InputStateProvider.cs" />
+    <Compile Include="IShootable.cs" />
     <Compile Include="SpaceInvaders.cs" />
     <Compile Include="ImagePathProvider.cs" />
     <Compile Include="MotherShip.cs" />

@@ -10,11 +10,14 @@ using System.Threading.Tasks;
 
 namespace Game1
 {
-    public class Spaceship : Entity
+    public class Spaceship : Entity, IShootable
     {
         public float Direction { get; set; }
 
         public bool IsPossibleToShoot { get; set; }
+
+        private const int m_MinPossibleFlyingBullets = 4;
+
 
         public Spaceship(SpaceInvaders spaceInvaders) : base(spaceInvaders)
         {
@@ -29,7 +32,7 @@ namespace Game1
 
         public override void Update(GameTime gameTime)
         {
-            (Game as SpaceInvaders).shootStatus(this);
+            shootStatus();
 
             // move the ship using the mouse:
             Position = new Vector2((Position.X + InputStateProvider.GetMousePositionDelta().X), Position.Y);
@@ -55,5 +58,28 @@ namespace Game1
             }
         }
 
+        public void Shoot()
+        {
+            Bullet.eBulletType bulletType = Bullet.eBulletType.SpaceShip;
+
+            Bullet bullet = new Bullet(bulletType, Game as SpaceInvaders);
+            bullet.LoadContent((Game as SpaceInvaders).Content);
+            bullet.Position = new Vector2(Position.X + Texture.Width / 2 - 1, Position.Y);
+            (Game as SpaceInvaders).GameComponents.Add(bullet);
+        }
+
+        private void shootStatus()
+        {
+            if ( (InputStateProvider.IsLeftMouseButtonClicked() || InputStateProvider.IsButtonClicked(Keys.Enter)) && isPossibleToShoot())
+            {
+                 Shoot();
+            }
+                  
+        }
+
+        private bool isPossibleToShoot()
+        {
+            return Bullet.s_NumberOfSpaceShipBullets < m_MinPossibleFlyingBullets;
+        }
     }
 }

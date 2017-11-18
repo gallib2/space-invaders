@@ -42,5 +42,35 @@ namespace Game1
 
             return retVal;
         }
+
+        public static bool IsLeftMouseButtonClicked()
+        {
+            bool leftButtonClicked = false;
+
+            if (PrevMouseState != null)
+            {
+                if (CurrentMouseState.LeftButton == ButtonState.Pressed && PrevMouseState.Value.LeftButton == ButtonState.Released)
+                {
+                    leftButtonClicked = !leftButtonClicked;
+                }
+            }
+
+            return leftButtonClicked;
+        }
+
+        public static bool IsButtonClicked(Keys key)
+        {
+            bool ButtonClicked = false;
+
+            if (PrevKeyBoardStat != null)
+            {
+                if (CurrKeyboardState.IsKeyDown(key) && PrevKeyBoardStat.Value.IsKeyUp(key))
+                {
+                    ButtonClicked = !ButtonClicked;
+                }
+            }
+
+            return ButtonClicked;
+        }
     }
 }

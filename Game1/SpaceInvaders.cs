@@ -21,7 +21,7 @@ namespace Game1
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
 
-        List<Entity> m_gameComponents;
+        public List<Entity> GameComponents { get; set; }
 
         List<List<Entity>> m_EnemiesList = new List<List<Entity>>();
         public float GapToWall { get; set; }
@@ -29,7 +29,7 @@ namespace Game1
         int m_EnemyNumOfColumns = 9;
 
         Spaceship m_Spaceship;
-        bool m_IsShooting = false;
+        //bool m_IsShooting = false;
 
         MotherShip m_MotherShip;
         public bool MotherShipNeedToPass { get; set; }
@@ -49,7 +49,7 @@ namespace Game1
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            m_gameComponents = new List<Entity>();
+            GameComponents = new List<Entity>();
 
             for (int i = 0; i < m_EnemyNumOfRows; i++)
             {
@@ -66,14 +66,14 @@ namespace Game1
             m_Spaceship = new Spaceship(this);
             m_Spaceship.Direction = 1f;
 
-            m_gameComponents.Add(m_Spaceship);
+            GameComponents.Add(m_Spaceship);
 
             m_MotherShip = new MotherShip(this);
             MotherShipNeedToPass = false;
             MotherShip.speedMovement = 120f;
             m_TimeMotherShipPass = m_RandomTime.Next(1, k_MinTimeMotherShipToPass);
 
-            m_gameComponents.Add(m_MotherShip);
+            GameComponents.Add(m_MotherShip);
 
             this.IsMouseVisible = true;
         }
@@ -89,9 +89,9 @@ namespace Game1
             //m_BulletSpaceShip.Texture = Content.Load<Texture2D>(ImagePathProvider.BulletPathImage);
             //m_BulletSpaceShip.Color = Color.Red;
 
-            for (int i = 0; i < m_gameComponents.Count; i++)
+            for (int i = 0; i < GameComponents.Count; i++)
             {
-                m_gameComponents[i].LoadContent(Content);
+                GameComponents[i].LoadContent(Content);
             }
 
             //foreach (Entity gameComponent in m_gameComponents)
@@ -193,9 +193,9 @@ namespace Game1
             //    gameComponent.Update(gameTime);
             //}
 
-            for (int i = 0; i < m_gameComponents.Count; i++)
+            for (int i = 0; i < GameComponents.Count; i++)
             {
-                m_gameComponents[i].Update(gameTime);
+                GameComponents[i].Update(gameTime);
             }
 
             if (isEnemyNextMoveIsFloor())
@@ -222,31 +222,56 @@ namespace Game1
             }
         }
 
-        public void shootStatus(Entity entity)
-        {
-            //bool isPossibleToShoot = true; // TODO!!!!
+        //public void shootStatus(Entity entity)
+        //{
+        //    //bool isPossibleToShoot = true; // TODO!!!!
 
-            if (InputStateProvider.PrevMouseState != null)
+        //    if (InputStateProvider.PrevMouseState != null)
+        //    {
+        //        if (InputStateProvider.CurrentMouseState.LeftButton == ButtonState.Pressed && InputStateProvider.PrevMouseState.Value.LeftButton == ButtonState.Released)
+        //        {
+        //            Bullet.eBulletType bulletType = getBulletType(entity);
+        //            if (isPossibleToShoot(bulletType))
+        //            {
+        //                Bullet m_BulletSpaceShip = new Bullet(bulletType, this); // TODO
+        //                m_BulletSpaceShip.Texture = Content.Load<Texture2D>(ImagePathProvider.BulletPathImage);
+        //                m_BulletSpaceShip.Color = Color.Red;
+        //                m_BulletSpaceShip.Position = new Vector2(entity.Position.X + entity.Texture.Width / 2 - 1, entity.Position.Y);
+        //                m_gameComponents.Add(m_BulletSpaceShip);
+        //                m_IsShooting = true;
+        //            }
+        //        }
+        //    }
+
+        //}
+
+        private Bullet.eBulletType getBulletType(Entity entity)
+        {
+            Bullet.eBulletType bulletType;
+
+            if (entity is Enemy)
             {
-                if (InputStateProvider.CurrentMouseState.LeftButton == ButtonState.Pressed && InputStateProvider.PrevMouseState.Value.LeftButton == ButtonState.Released)
-                {
-                    if (isPossibleToShoot())
-                    {
-                        Bullet m_BulletSpaceShip = new Bullet(Bullet.eBulletType.SpaceShip, this); // TODO
-                        m_BulletSpaceShip.Texture = Content.Load<Texture2D>(ImagePathProvider.BulletPathImage);
-                        m_BulletSpaceShip.Color = Color.Red;
-                        m_BulletSpaceShip.Position = new Vector2(entity.Position.X + entity.Texture.Width/2 - 1 , entity.Position.Y);
-                        m_gameComponents.Add(m_BulletSpaceShip);
-                        m_IsShooting = true;
-                    }
-                }
+                bulletType = Bullet.eBulletType.Enemy;
             }
+            else
+            {
+                bulletType = Bullet.eBulletType.SpaceShip;
+            }
+
+            return bulletType;
 
         }
 
-        private bool isPossibleToShoot()
+        private bool isPossibleToShoot(Bullet.eBulletType bulletType)
         {
-            return Bullet.s_NumberOfSpaceShipBullets < 4;
+            bool possibleToShoot = true;
+
+            if (bulletType == Bullet.eBulletType.SpaceShip)
+            {
+                possibleToShoot = Bullet.s_NumberOfSpaceShipBullets < 4;
+            }
+
+            return possibleToShoot;
         }
 
         private void handleGameOver()
@@ -457,9 +482,9 @@ namespace Game1
             //    gameComponent.Draw(gameTime, spriteBatch, gameComponent);
             //}
 
-            for (int i = 0; i < m_gameComponents.Count; i++)
+            for (int i = 0; i < GameComponents.Count; i++)
             {
-                m_gameComponents[i].Draw(gameTime, spriteBatch, m_gameComponents[i]);
+                GameComponents[i].Draw(gameTime, spriteBatch, GameComponents[i]);
             }
 
             foreach (var enemiesRow in m_EnemiesList)

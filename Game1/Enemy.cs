@@ -17,6 +17,7 @@ namespace Game1
         public static float speedMovement { get; set; }
         public readonly float sr_TimePercentBetweenJumps = 0.9f;
         private double m_TimeToNextBlink;
+        
 
         public float Direction { get; set; }
 
