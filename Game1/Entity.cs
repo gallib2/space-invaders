@@ -17,9 +17,12 @@ namespace Game1
 
         public Game Game { get; set; }
 
+        public bool IsVisible { get; set; }
+
         public Entity(Game game)
         {
             this.Game = game;
+            IsVisible = true;
         }
 
         public virtual void LoadContent(ContentManager i_content)

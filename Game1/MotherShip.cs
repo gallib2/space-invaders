@@ -9,18 +9,18 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Game1
 {
-    public class MotherShip : Entity
+    public class MotherShip : EnemyBase
     {
         public static float speedMovement { get; set; }
 
         public MotherShip(SpaceInvaders spaceInvaders) : base(spaceInvaders)
         {
-
+            Type = eEnemyTypes.MotherShip;
         }
 
         public override void LoadContent(ContentManager i_content)
         {
-            Texture = i_content.Load<Texture2D>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.MotherShip]);
+            Texture = i_content.Load<Texture2D>(ImagePathProvider.EnemyiesPathImageDictionary[EnemyBase.eEnemyTypes.MotherShip]);
             Color = Color.White;
         }
 
@@ -36,6 +36,7 @@ namespace Game1
                 {
                     Position = (Game as SpaceInvaders).InitMotherShipPosition();
                     (Game as SpaceInvaders).MotherShipNeedToPass = false;
+                    //IsVisible = true;
                 }
             }
         }

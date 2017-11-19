@@ -9,16 +9,16 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Game1
 {
-    public class Enemy : Entity
+    public class Enemy : EnemyBase
     {
-        public bool IsVisible { get; set; }
+        //public bool IsVisible { get; set; }
         public eEnemyMovementOptions EnemyMovementStatus { get; set; }
         public static bool IsEnemyMoveRight { get; set; }
         public static float speedMovement { get; set; }
         public readonly float sr_TimePercentBetweenJumps = 0.9f;
         private double m_TimeToNextBlink;
-        public bool IsHitted { get; set; }
-        
+        //public bool IsHitted { get; set; }
+
 
         public float Direction { get; set; }
 
@@ -36,6 +36,7 @@ namespace Game1
             MoveGap,
             MoveRegular
         }
+
 
         public override void Update(GameTime gameTime)
         {

@@ -27,6 +27,7 @@ namespace Game1
         public float GapToWall { get; set; }
         int m_EnemyNumOfRows = 5;
         int m_EnemyNumOfColumns = 9;
+        private int m_NumberOfHittedEnemies;
 
         Spaceship m_Spaceship;
         //bool m_IsShooting = false;
@@ -42,6 +43,9 @@ namespace Game1
         Texture2D m_TextureBackground;
         Vector2 m_PositionBackground;
         Color m_TintBackground = Color.White;
+
+        private int m_Score;
+        private int m_NumberOfSouls = 3;
 
 
         public SpaceInvaders()
@@ -179,6 +183,8 @@ namespace Game1
             // get the current input devices state:
             int timeMotherShipToPass = gameTime.TotalGameTime.Seconds - m_PrevTimeMotherShipPass;
 
+            checkScore();
+
             // Allows the game to exit by GameButton 'back' button or Esc:
             if (this.IsGameOver || InputStateProvider.CurrKeyboardState.IsKeyDown(Keys.Escape) || isEnemyNextMoveIsFloor())
             {
@@ -189,6 +195,11 @@ namespace Game1
 
             for (int i = 0; i < GameComponents.Count; i++)
             {
+                if (GameComponents[i] is Ivulnerable && GameComponents[i] is EnemyBase)
+                {
+                    checkIfBulletHitEnemy(GameComponents[i] as EnemyBase);
+                }
+
                 GameComponents[i].Update(gameTime);
             }
 
@@ -211,13 +222,16 @@ namespace Game1
             }
         }
 
-        private void shootStatus()
+        private void checkScore()
         {
-            //if ((InputStateProvider.IsLeftMouseButtonClicked() || InputStateProvider.IsButtonClicked(Keys.Enter)) && isPossibleToShoot())
-            //{
-            //    Shoot();
-            //}
-
+            if (m_Score < 0)
+            {
+                // m_NumberOfSouls--;
+            }
+            if (m_NumberOfSouls < 0)
+            {
+                IsGameOver = true;
+            }
         }
 
         private Bullet.eBulletType getBulletType(Entity entity)
@@ -251,7 +265,7 @@ namespace Game1
 
         private void handleGameOver()
         {
-            string message = "Game Is Over...";
+            string message = $"Game Is Over..Score: {m_Score} ";
             string caption = "Game Over";
             System.Windows.Forms.MessageBoxButtons buttons = System.Windows.Forms.MessageBoxButtons.OK;
             System.Windows.Forms.DialogResult result;
@@ -297,6 +311,7 @@ namespace Game1
                     m_TimeMotherShipPass = m_RandomTime.Next(k_MinTimeMotherShipToPass, k_MaxTimeMotherShipToPass);
 
                     isNeedToPass = !isNeedToPass;
+                    m_MotherShip.IsVisible = true;
                 }
 
                 MotherShipNeedToPass = isNeedToPass;
@@ -316,7 +331,7 @@ namespace Game1
             {
                 foreach (var enemy in enemiesRow)
                 {
-                    KeyValuePair<string, Color> imageAndColorToLoad = getEnemyImageAndColor(i);
+                    KeyValuePair<string, Color> imageAndColorToLoad = getEnemyImageAndColorAndSetType(i, (enemy as Enemy));
                     enemy.Texture = Content.Load<Texture2D>(imageAndColorToLoad.Key);
                     enemy.Color = imageAndColorToLoad.Value;
                 }
@@ -324,21 +339,24 @@ namespace Game1
             }
         }
 
-        private KeyValuePair<string, Color> getEnemyImageAndColor(int i)
+        private KeyValuePair<string, Color> getEnemyImageAndColorAndSetType(int i, Enemy enemy)
         {
             KeyValuePair<string, Color> imageAndColorToLoad;
 
             if (i == 0)
             {
-                imageAndColorToLoad = new KeyValuePair<string, Color>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.Enemy1], Color.LightPink);
+                enemy.Type = EnemyBase.eEnemyTypes.Enemy1;
+                imageAndColorToLoad = new KeyValuePair<string, Color>(ImagePathProvider.EnemyiesPathImageDictionary[enemy.Type], Color.LightPink);
             }
             else if (i == 1 || i == 2)
             {
-                imageAndColorToLoad = new KeyValuePair<string, Color>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.Enemy2], Color.LightBlue);
+                enemy.Type = EnemyBase.eEnemyTypes.Enemy2;
+                imageAndColorToLoad = new KeyValuePair<string, Color>(ImagePathProvider.EnemyiesPathImageDictionary[enemy.Type], Color.LightBlue);
             }
             else
             {
-                imageAndColorToLoad = new KeyValuePair<string, Color>(ImagePathProvider.EnemyiesPathImageDictionary[ImagePathProvider.eEnemyTypes.Enemy3], Color.White);
+                enemy.Type = EnemyBase.eEnemyTypes.Enemy3;
+                imageAndColorToLoad = new KeyValuePair<string, Color>(ImagePathProvider.EnemyiesPathImageDictionary[enemy.Type], Color.White);
             }
 
             return imageAndColorToLoad;
@@ -350,29 +368,36 @@ namespace Game1
             {
                 foreach (var enemy in enemiesRow)
                 {
-                    if((enemy as Enemy).IsVisible)
-                    {
-                        checkIfBulletHitEnemy(enemy as Enemy);
-                    }
+                    checkIfBulletHitEnemy(enemy as Enemy);
+                    //if (m_NumberOfHittedEnemies % 3 == 0)
+                    //{
+                    //    Enemy.speedMovement = Enemy.speedMovement * 0.6f;
+                    //}
                     enemy.Update(gameTime);
                 }
             }
         }
 
-        private void checkIfBulletHitEnemy(Enemy enemy)
+        private void checkIfBulletHitEnemy(EnemyBase enemy)
         {
-            for (int i = 0; i < GameComponents.Count; i++)
+            if (enemy.IsVisible)
             {
-                if (GameComponents[i] is Bullet)
+                for (int i = 0; i < GameComponents.Count; i++)
                 {
-                    Bullet currentBullet = (GameComponents[i] as Bullet);
-                    if ((currentBullet.Position.X > enemy.Position.X && currentBullet.Position.X < enemy.Position.X + enemy.Texture.Width) &&
-                        (currentBullet.Position.Y > enemy.Position.Y && currentBullet.Position.Y < enemy.Position.Y + enemy.Texture.Height))
+                    if (GameComponents[i] is Bullet)
                     {
-                        (enemy as Enemy).IsHitted = true;
-                        (enemy as Enemy).IsVisible = false;
-                        currentBullet.Dispose();
-                        GameComponents.Remove(currentBullet);
+                        Bullet currentBullet = (GameComponents[i] as Bullet);
+                        if ((currentBullet.Position.X > enemy.Position.X && currentBullet.Position.X < enemy.Position.X + enemy.Texture.Width) &&
+                            (currentBullet.Position.Y > enemy.Position.Y && currentBullet.Position.Y < enemy.Position.Y + enemy.Texture.Height))
+                        {
+                            (enemy as EnemyBase).IsHitted = true;
+                            (enemy as EnemyBase).IsVisible = false;
+
+                            m_Score += (int)enemy.Type;
+                            m_NumberOfHittedEnemies++;
+                            currentBullet.Dispose();
+                            GameComponents.Remove(currentBullet);
+                        }
                     }
                 }
             }
@@ -482,7 +507,10 @@ namespace Game1
 
             for (int i = 0; i < GameComponents.Count; i++)
             {
-                GameComponents[i].Draw(gameTime, spriteBatch, GameComponents[i]);
+                if (GameComponents[i].IsVisible)
+                {
+                    GameComponents[i].Draw(gameTime, spriteBatch, GameComponents[i]);
+                }
             }
 
             foreach (var enemiesRow in m_EnemiesList)
