@@ -40,9 +40,13 @@ namespace Game1
             {
                 Dispose();
             }
-            else
+            else if(BullletType == eBulletType.SpaceShip)
             {
                 Position = new Vector2(Position.X, Position.Y - (r_MovementSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds));
+            }
+            else // bulletType == eBulletType.Enemy
+            {
+                Position = new Vector2(Position.X, Position.Y + (r_MovementSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds));
             }
         }
 

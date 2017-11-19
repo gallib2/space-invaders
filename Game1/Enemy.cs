@@ -9,15 +9,15 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Game1
 {
-    public class Enemy : EnemyBase
+    public class Enemy : EnemyBase, IShootable
     {
-        //public bool IsVisible { get; set; }
         public eEnemyMovementOptions EnemyMovementStatus { get; set; }
         public static bool IsEnemyMoveRight { get; set; }
         public static float speedMovement { get; set; }
         public readonly float sr_TimePercentBetweenJumps = 0.9f;
         private double m_TimeToNextBlink;
         //public bool IsHitted { get; set; }
+        //public bool IsVisible { get; set; }
 
 
         public float Direction { get; set; }
@@ -26,7 +26,7 @@ namespace Game1
         {
             EnemyMovementStatus = eEnemyMovementOptions.MoveRegular;
             Direction = 1f;
-            IsVisible = true;
+            //IsVisible = true;
         }
 
 
@@ -37,6 +37,15 @@ namespace Game1
             MoveRegular
         }
 
+        public void Shoot()
+        {
+            Bullet.eBulletType bulletType = Bullet.eBulletType.Enemy;
+
+            Bullet bullet = new Bullet(bulletType, Game as SpaceInvaders);
+            bullet.LoadContent((Game as SpaceInvaders).Content);
+            bullet.Position = new Vector2(Position.X + Texture.Width / 2 - 1, Position.Y);
+            (Game as SpaceInvaders).GameComponents.Add(bullet);
+        }
 
         public override void Update(GameTime gameTime)
         {

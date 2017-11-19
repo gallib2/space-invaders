@@ -28,9 +28,14 @@ namespace Game1
         int m_EnemyNumOfRows = 5;
         int m_EnemyNumOfColumns = 9;
         private int m_NumberOfHittedEnemies;
+        public bool EnemyNeedToShoot { get; set; }
+        double m_TimeToShoot = 0;
+        int m_PrevTimeEnemyShot;
+        private int m_TimeEnemyToShoot;
+        private const int k_MinTimeForEnemyToShoot = 10;
+        private const int k_MaxTimeForEnemyToShoot = 12;
 
         Spaceship m_Spaceship;
-        //bool m_IsShooting = false;
 
         MotherShip m_MotherShip;
         public bool MotherShipNeedToPass { get; set; }
@@ -66,6 +71,7 @@ namespace Game1
 
             Enemy.IsEnemyMoveRight = true;
             Enemy.speedMovement = 0.25f;
+            m_TimeEnemyToShoot = m_RandomTime.Next(1, k_MaxTimeForEnemyToShoot);
 
             m_Spaceship = new Spaceship(this);
             m_Spaceship.Direction = 1f;
@@ -90,21 +96,12 @@ namespace Game1
             // TODO: use this.Content to load your game content here
             m_TextureBackground = Content.Load<Texture2D>(ImagePathProvider.BackgroundPathImage);
 
-            //m_BulletSpaceShip.Texture = Content.Load<Texture2D>(ImagePathProvider.BulletPathImage);
-            //m_BulletSpaceShip.Color = Color.Red;
-
             for (int i = 0; i < GameComponents.Count; i++)
             {
                 GameComponents[i].LoadContent(Content);
             }
 
-            //foreach (Entity gameComponent in m_gameComponents)
-            //{
-            //    gameComponent.LoadContent(Content);
-            //}
-
             loadEnemyContent();
-
             InitPositions();
         }
 
@@ -182,8 +179,10 @@ namespace Game1
         {
             // get the current input devices state:
             int timeMotherShipToPass = gameTime.TotalGameTime.Seconds - m_PrevTimeMotherShipPass;
+            int timeEnemyToShoot = gameTime.TotalGameTime.Seconds - m_PrevTimeEnemyShot;
 
             checkScore();
+            checkIfAllEnemiesDead();
 
             // Allows the game to exit by GameButton 'back' button or Esc:
             if (this.IsGameOver || InputStateProvider.CurrKeyboardState.IsKeyDown(Keys.Escape) || isEnemyNextMoveIsFloor())
@@ -192,6 +191,7 @@ namespace Game1
             }
 
             isMotherShipNeedToPass(gameTime, timeMotherShipToPass);
+            checkIfEnemyTimeToShoot(gameTime, timeEnemyToShoot);
 
             for (int i = 0; i < GameComponents.Count; i++)
             {
@@ -219,6 +219,14 @@ namespace Game1
             {
                 Enemy.IsEnemyMoveRight = !Enemy.IsEnemyMoveRight;
                 IsChangeEnemyDirection = false;
+            }
+        }
+
+        private void checkIfAllEnemiesDead()
+        {
+            if(m_NumberOfHittedEnemies == m_EnemiesList.Count)
+            {
+                IsGameOver = true;
             }
         }
 
@@ -373,9 +381,56 @@ namespace Game1
                     //{
                     //    Enemy.speedMovement = Enemy.speedMovement * 0.6f;
                     //}
+                    //checkIfEnemyTimeToShoot(enemy as Enemy, gameTime);
                     enemy.Update(gameTime);
                 }
             }
+        }
+
+        private void checkIfEnemyTimeToShoot(GameTime gameTime, int timeEnemyToShoot)
+        {
+            //int randomRow = m_RandomTime.Next(0, 5);
+            //int randomCol = m_RandomTime.Next(0, 8);
+
+            KeyValuePair<int, int> randomRowAndCol = getRandomRowAndCol();
+
+            Entity enemy = m_EnemiesList[randomRowAndCol.Key][randomRowAndCol.Value];
+            
+            if (enemy.IsVisible)
+            {
+                //bool isNeedToShoot = false;
+               // int timeEnemyToShoot = gameTime.TotalGameTime.Seconds - m_PrevTimeEnemyShot;
+
+                //if (!EnemyNeedToShoot)
+               // {
+                    m_TimeToShoot += gameTime.ElapsedGameTime.TotalSeconds;
+                    if (timeEnemyToShoot > 0 && (timeEnemyToShoot % m_TimeEnemyToShoot) == 0)
+                    {
+                        m_PrevTimeEnemyShot += m_TimeEnemyToShoot;
+                        m_TimeEnemyToShoot = m_RandomTime.Next(k_MinTimeForEnemyToShoot, k_MaxTimeForEnemyToShoot);
+
+                        //isNeedToShoot = !isNeedToShoot;
+                        (enemy as Enemy).Shoot();
+                   // }
+
+                   // EnemyNeedToShoot = isNeedToShoot;
+                }
+            }
+        }
+
+        private KeyValuePair<int, int> getRandomRowAndCol()
+        {
+            KeyValuePair<int, int> randomRowAndCol;
+
+            do
+            {
+                int row = m_RandomTime.Next(0, m_EnemyNumOfRows);
+                int col = m_RandomTime.Next(0, m_EnemyNumOfColumns);
+                randomRowAndCol = new KeyValuePair<int, int>(row, col);
+
+            } while (!m_EnemiesList[randomRowAndCol.Key][randomRowAndCol.Value].IsVisible);
+
+            return randomRowAndCol;
         }
 
         private void checkIfBulletHitEnemy(EnemyBase enemy)
@@ -384,7 +439,7 @@ namespace Game1
             {
                 for (int i = 0; i < GameComponents.Count; i++)
                 {
-                    if (GameComponents[i] is Bullet)
+                    if (GameComponents[i] is Bullet && (GameComponents[i] as Bullet).BullletType == Bullet.eBulletType.SpaceShip)
                     {
                         Bullet currentBullet = (GameComponents[i] as Bullet);
                         if ((currentBullet.Position.X > enemy.Position.X && currentBullet.Position.X < enemy.Position.X + enemy.Texture.Width) &&
@@ -499,11 +554,6 @@ namespace Game1
             spriteBatch.Draw(m_TextureBackground, m_PositionBackground, m_TintBackground); // tinting with alpha channel
                                                                                            //spriteBatch.Draw(m_Enemy.TextureEnemy, m_Enemy.Position, Color.LightPink); // purple ship
                                                                                            ///spriteBatch.Draw(m_TextureShip, m_PositionShip, Color.White); //no tinting
-
-            //foreach (Entity gameComponent in m_gameComponents)
-            //{
-            //    gameComponent.Draw(gameTime, spriteBatch, gameComponent);
-            //}
 
             for (int i = 0; i < GameComponents.Count; i++)
             {
