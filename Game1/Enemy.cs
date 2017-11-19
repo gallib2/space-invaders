@@ -17,6 +17,7 @@ namespace Game1
         public static float speedMovement { get; set; }
         public readonly float sr_TimePercentBetweenJumps = 0.9f;
         private double m_TimeToNextBlink;
+        public bool IsHitted { get; set; }
         
 
         public float Direction { get; set; }
@@ -25,6 +26,7 @@ namespace Game1
         {
             EnemyMovementStatus = eEnemyMovementOptions.MoveRegular;
             Direction = 1f;
+            IsVisible = true;
         }
 
 
@@ -41,23 +43,26 @@ namespace Game1
 
             if (m_TimeToNextBlink >= Enemy.speedMovement)
             {
-                switch (EnemyMovementStatus)
+                if (IsVisible)
                 {
-                    case Enemy.eEnemyMovementOptions.MoveDown:
-                        Position = new Vector2(Position.X, Position.Y + Texture.Height / 2);
-                        Direction *= -1f;
-                        EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveRegular;
-                        (Game as SpaceInvaders).IsChangeEnemyDirection = true;
-                        (Game as SpaceInvaders).IsChangeEnemiesIntervalBetweenJumps = true;
-                        (Game as SpaceInvaders).IsCanEnemyMatrixMoveRegular = true;
-                        break;
-                    case Enemy.eEnemyMovementOptions.MoveGap:
-                        Position = new Vector2(Position.X + (Game as SpaceInvaders).GapToWall, Position.Y);
-                        EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveDown;
-                        break;
-                    case Enemy.eEnemyMovementOptions.MoveRegular:
-                        Position = new Vector2(Position.X + (Direction) * (Texture.Width / 2), Position.Y);
-                        break;
+                    switch (EnemyMovementStatus)
+                    {
+                        case Enemy.eEnemyMovementOptions.MoveDown:
+                            Position = new Vector2(Position.X, Position.Y + Texture.Height / 2);
+                            Direction *= -1f;
+                            EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveRegular;
+                            (Game as SpaceInvaders).IsChangeEnemyDirection = true;
+                            (Game as SpaceInvaders).IsChangeEnemiesIntervalBetweenJumps = true;
+                            (Game as SpaceInvaders).IsCanEnemyMatrixMoveRegular = true;
+                            break;
+                        case Enemy.eEnemyMovementOptions.MoveGap:
+                            Position = new Vector2(Position.X + (Game as SpaceInvaders).GapToWall, Position.Y);
+                            EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveDown;
+                            break;
+                        case Enemy.eEnemyMovementOptions.MoveRegular:
+                            Position = new Vector2(Position.X + (Direction) * (Texture.Width / 2), Position.Y);
+                            break;
+                    }
                 }
 
                 m_TimeToNextBlink -= Enemy.speedMovement;

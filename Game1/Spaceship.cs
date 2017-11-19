@@ -70,11 +70,11 @@ namespace Game1
 
         private void shootStatus()
         {
-            if ( (InputStateProvider.IsLeftMouseButtonClicked() || InputStateProvider.IsButtonClicked(Keys.Enter)) && isPossibleToShoot())
+            if ((InputStateProvider.IsLeftMouseButtonClicked() || InputStateProvider.IsButtonClicked(Keys.Enter)) && isPossibleToShoot())
             {
-                 Shoot();
+                Shoot();
             }
-                  
+
         }
 
         private bool isPossibleToShoot()

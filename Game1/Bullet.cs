@@ -36,7 +36,7 @@ namespace Game1
 
         public override void Update(GameTime gameTime)
         {
-            if(Position.Y + Texture.Height < 0)
+            if (Position.Y + Texture.Height < 0)
             {
                 Dispose();
             }

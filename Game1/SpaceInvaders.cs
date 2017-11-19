@@ -180,27 +180,16 @@ namespace Game1
             int timeMotherShipToPass = gameTime.TotalGameTime.Seconds - m_PrevTimeMotherShipPass;
 
             // Allows the game to exit by GameButton 'back' button or Esc:
-            if (this.IsGameOver || InputStateProvider.CurrKeyboardState.IsKeyDown(Keys.Escape))
+            if (this.IsGameOver || InputStateProvider.CurrKeyboardState.IsKeyDown(Keys.Escape) || isEnemyNextMoveIsFloor())
             {
                 handleGameOver();
             }
 
             isMotherShipNeedToPass(gameTime, timeMotherShipToPass);
 
-            // update game components
-            //foreach (Entity gameComponent in m_gameComponents)
-            //{
-            //    gameComponent.Update(gameTime);
-            //}
-
             for (int i = 0; i < GameComponents.Count; i++)
             {
                 GameComponents[i].Update(gameTime);
-            }
-
-            if (isEnemyNextMoveIsFloor())
-            {
-                this.IsGameOver = true;
             }
 
             checkIfEnemyNeedMoveGapAndUpdate();
@@ -222,28 +211,14 @@ namespace Game1
             }
         }
 
-        //public void shootStatus(Entity entity)
-        //{
-        //    //bool isPossibleToShoot = true; // TODO!!!!
+        private void shootStatus()
+        {
+            //if ((InputStateProvider.IsLeftMouseButtonClicked() || InputStateProvider.IsButtonClicked(Keys.Enter)) && isPossibleToShoot())
+            //{
+            //    Shoot();
+            //}
 
-        //    if (InputStateProvider.PrevMouseState != null)
-        //    {
-        //        if (InputStateProvider.CurrentMouseState.LeftButton == ButtonState.Pressed && InputStateProvider.PrevMouseState.Value.LeftButton == ButtonState.Released)
-        //        {
-        //            Bullet.eBulletType bulletType = getBulletType(entity);
-        //            if (isPossibleToShoot(bulletType))
-        //            {
-        //                Bullet m_BulletSpaceShip = new Bullet(bulletType, this); // TODO
-        //                m_BulletSpaceShip.Texture = Content.Load<Texture2D>(ImagePathProvider.BulletPathImage);
-        //                m_BulletSpaceShip.Color = Color.Red;
-        //                m_BulletSpaceShip.Position = new Vector2(entity.Position.X + entity.Texture.Width / 2 - 1, entity.Position.Y);
-        //                m_gameComponents.Add(m_BulletSpaceShip);
-        //                m_IsShooting = true;
-        //            }
-        //        }
-        //    }
-
-        //}
+        }
 
         private Bullet.eBulletType getBulletType(Entity entity)
         {
@@ -375,7 +350,30 @@ namespace Game1
             {
                 foreach (var enemy in enemiesRow)
                 {
+                    if((enemy as Enemy).IsVisible)
+                    {
+                        checkIfBulletHitEnemy(enemy as Enemy);
+                    }
                     enemy.Update(gameTime);
+                }
+            }
+        }
+
+        private void checkIfBulletHitEnemy(Enemy enemy)
+        {
+            for (int i = 0; i < GameComponents.Count; i++)
+            {
+                if (GameComponents[i] is Bullet)
+                {
+                    Bullet currentBullet = (GameComponents[i] as Bullet);
+                    if ((currentBullet.Position.X > enemy.Position.X && currentBullet.Position.X < enemy.Position.X + enemy.Texture.Width) &&
+                        (currentBullet.Position.Y > enemy.Position.Y && currentBullet.Position.Y < enemy.Position.Y + enemy.Texture.Height))
+                    {
+                        (enemy as Enemy).IsHitted = true;
+                        (enemy as Enemy).IsVisible = false;
+                        currentBullet.Dispose();
+                        GameComponents.Remove(currentBullet);
+                    }
                 }
             }
         }
@@ -491,7 +489,10 @@ namespace Game1
             {
                 foreach (var enemy in enemiesRow)
                 {
-                    enemy.Draw(gameTime, spriteBatch, enemy);
+                    if ((enemy as Enemy).IsVisible)
+                    {
+                        enemy.Draw(gameTime, spriteBatch, enemy);
+                    }
                 }
             }
 
