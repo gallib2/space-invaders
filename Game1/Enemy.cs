@@ -73,9 +73,10 @@ namespace Game1
                             Position = new Vector2(Position.X + (Direction) * (Texture.Width / 2), Position.Y);
                             break;
                     }
-                }
+                
 
                 m_TimeToNextBlink -= Enemy.speedMovement;
+                }
             }
         }
 

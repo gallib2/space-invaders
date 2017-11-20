@@ -70,7 +70,7 @@ namespace Game1
             }
 
             Enemy.IsEnemyMoveRight = true;
-            Enemy.speedMovement = 0.25f;
+            Enemy.speedMovement = 0.5f;
             m_TimeEnemyToShoot = m_RandomTime.Next(1, k_MaxTimeForEnemyToShoot);
 
             m_Spaceship = new Spaceship(this);
@@ -112,14 +112,15 @@ namespace Game1
             float x = (float)GraphicsDevice.Viewport.Width / 2;
             float y = (float)GraphicsDevice.Viewport.Height;
 
-            // Offset:
-            x -= m_Spaceship.Texture.Width / 2;
-            y -= m_Spaceship.Texture.Height / 2;
+            initSpaceShipPosition();
+            //// Offset:
+            //x -= m_Spaceship.Texture.Width / 2;
+            //y -= m_Spaceship.Texture.Height / 2;
 
-            // Put it a little bit higher:
-            y -= 30;
+            //// Put it a little bit higher:
+            //y -= 30;
 
-            m_Spaceship.Position = new Vector2(x, y);
+            //m_Spaceship.Position = new Vector2(x, y);
 
             // TODO : const row and col...
             int j = 0;
@@ -144,6 +145,23 @@ namespace Game1
             Vector4 bgTint = Vector4.One;
             bgTint.W = 0.4f; // set the alpha component to 0.2
             m_TintBackground = new Color(bgTint);
+        }
+
+        private void initSpaceShipPosition()
+        {
+            // 1. init the ship position
+            // Get the bottom and center:
+            float x = 0;//(float)GraphicsDevice.Viewport.Width;
+            float y = (float)GraphicsDevice.Viewport.Height;
+
+            // Offset:
+            x -= m_Spaceship.Texture.Width / 2;
+            y -= m_Spaceship.Texture.Height / 2;
+
+            // Put it a little bit higher:
+            y -= 30;
+
+            m_Spaceship.Position = new Vector2(x, y);
         }
 
         /// <summary>
@@ -193,15 +211,23 @@ namespace Game1
             isMotherShipNeedToPass(gameTime, timeMotherShipToPass);
             checkIfEnemyTimeToShoot(gameTime, timeEnemyToShoot);
 
-            for (int i = 0; i < GameComponents.Count; i++)
-            {
-                if (GameComponents[i] is Ivulnerable && GameComponents[i] is EnemyBase)
-                {
-                    checkIfBulletHitEnemy(GameComponents[i] as EnemyBase);
-                }
+            updateGameComponents(gameTime);
+            //for (int i = 0; i < GameComponents.Count; i++)
+            //{
+            //    if (GameComponents[i] is Ivulnerable)
+            //    {
+            //        if (GameComponents[i] is EnemyBase)
+            //        {
+            //            checkIfBulletHitEnemy(GameComponents[i] as EnemyBase);
+            //        }
+            //        else
+            //        {
+            //            checkIfBulletHitSpaceShip();
+            //        }
+            //    }
 
-                GameComponents[i].Update(gameTime);
-            }
+            //    GameComponents[i].Update(gameTime);
+            //}
 
             checkIfEnemyNeedMoveGapAndUpdate();
 
@@ -222,9 +248,29 @@ namespace Game1
             }
         }
 
+        private void updateGameComponents(GameTime gameTime)
+        {
+            for (int i = 0; i < GameComponents.Count; i++)
+            {
+                if (GameComponents[i] is Ivulnerable)
+                {
+                    if (GameComponents[i] is EnemyBase)
+                    {
+                        checkIfBulletHitEnemy(GameComponents[i] as EnemyBase);
+                    }
+                    else
+                    {
+                        checkIfBulletHitSpaceShip();
+                    }
+                }
+
+                GameComponents[i].Update(gameTime);
+            }
+        }
+
         private void checkIfAllEnemiesDead()
         {
-            if(m_NumberOfHittedEnemies == m_EnemiesList.Count)
+            if (m_NumberOfHittedEnemies == (m_EnemyNumOfRows*m_EnemyNumOfColumns))
             {
                 IsGameOver = true;
             }
@@ -234,6 +280,7 @@ namespace Game1
         {
             if (m_Score < 0)
             {
+                m_Score = 0;
                 // m_NumberOfSouls--;
             }
             if (m_NumberOfSouls < 0)
@@ -389,31 +436,19 @@ namespace Game1
 
         private void checkIfEnemyTimeToShoot(GameTime gameTime, int timeEnemyToShoot)
         {
-            //int randomRow = m_RandomTime.Next(0, 5);
-            //int randomCol = m_RandomTime.Next(0, 8);
-
             KeyValuePair<int, int> randomRowAndCol = getRandomRowAndCol();
 
             Entity enemy = m_EnemiesList[randomRowAndCol.Key][randomRowAndCol.Value];
-            
+
             if (enemy.IsVisible)
             {
-                //bool isNeedToShoot = false;
-               // int timeEnemyToShoot = gameTime.TotalGameTime.Seconds - m_PrevTimeEnemyShot;
+                m_TimeToShoot += gameTime.ElapsedGameTime.TotalSeconds;
+                if (timeEnemyToShoot > 0 && (timeEnemyToShoot % m_TimeEnemyToShoot) == 0)
+                {
+                    m_PrevTimeEnemyShot += m_TimeEnemyToShoot;
+                    m_TimeEnemyToShoot = m_RandomTime.Next(k_MinTimeForEnemyToShoot, k_MaxTimeForEnemyToShoot);
 
-                //if (!EnemyNeedToShoot)
-               // {
-                    m_TimeToShoot += gameTime.ElapsedGameTime.TotalSeconds;
-                    if (timeEnemyToShoot > 0 && (timeEnemyToShoot % m_TimeEnemyToShoot) == 0)
-                    {
-                        m_PrevTimeEnemyShot += m_TimeEnemyToShoot;
-                        m_TimeEnemyToShoot = m_RandomTime.Next(k_MinTimeForEnemyToShoot, k_MaxTimeForEnemyToShoot);
-
-                        //isNeedToShoot = !isNeedToShoot;
-                        (enemy as Enemy).Shoot();
-                   // }
-
-                   // EnemyNeedToShoot = isNeedToShoot;
+                    (enemy as Enemy).Shoot();
                 }
             }
         }
@@ -433,6 +468,30 @@ namespace Game1
             return randomRowAndCol;
         }
 
+        private void checkIfBulletHitSpaceShip()
+        {
+            for (int i = 0; i < GameComponents.Count; i++)
+            {
+                if (GameComponents[i] is Bullet && (GameComponents[i] as Bullet).BullletType == Bullet.eBulletType.Enemy)
+                {
+                    Bullet currentBullet = (GameComponents[i] as Bullet);
+                    if ((currentBullet.Position.X > m_Spaceship.Position.X && currentBullet.Position.X < m_Spaceship.Position.X + m_Spaceship.Texture.Width) &&
+                        (currentBullet.Position.Y > m_Spaceship.Position.Y && currentBullet.Position.Y < m_Spaceship.Position.Y + m_Spaceship.Texture.Height))
+                    {
+                        m_Spaceship.IsHitted = true;
+                        //m_Spaceship.Position = ;
+                        initSpaceShipPosition();
+
+                        //m_Score += (int)enemy.Type;
+                        m_NumberOfSouls--;
+                        m_Score -= 1900;
+                        currentBullet.Dispose();
+                        GameComponents.Remove(currentBullet);
+                    }
+                }
+            }
+        }
+
         private void checkIfBulletHitEnemy(EnemyBase enemy)
         {
             if (enemy.IsVisible)
@@ -449,7 +508,10 @@ namespace Game1
                             (enemy as EnemyBase).IsVisible = false;
 
                             m_Score += (int)enemy.Type;
-                            m_NumberOfHittedEnemies++;
+                            if(enemy is Enemy)
+                            {
+                                m_NumberOfHittedEnemies++;
+                            }
                             currentBullet.Dispose();
                             GameComponents.Remove(currentBullet);
                         }

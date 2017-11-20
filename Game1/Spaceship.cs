@@ -10,11 +10,12 @@ using System.Threading.Tasks;
 
 namespace Game1
 {
-    public class Spaceship : Entity, IShootable
+    public class Spaceship : Entity, IShootable, Ivulnerable
     {
         public float Direction { get; set; }
 
         public bool IsPossibleToShoot { get; set; }
+        public bool IsHitted { get; set; }
 
         private const int m_MinPossibleFlyingBullets = 4;
 
