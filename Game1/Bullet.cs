@@ -22,16 +22,19 @@ namespace Game1
         public Bullet(eBulletType bulletType, SpaceInvaders spaceInveders) : base(spaceInveders)
         {
             this.BullletType = bulletType;
+            Color = Color.Blue;
+            
             if(bulletType == eBulletType.SpaceShip)
             {
                 s_NumberOfSpaceShipBullets++;
+                Color = Color.Red;
             }
         }
 
         public override void LoadContent(ContentManager i_content)
         {
             Texture = i_content.Load<Texture2D>(ImagePathProvider.BulletPathImage);
-            Color = Color.Red;
+            
         }
 
         public override void Update(GameTime gameTime)

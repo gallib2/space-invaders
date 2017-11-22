@@ -212,22 +212,6 @@ namespace Game1
             checkIfEnemyTimeToShoot(gameTime, timeEnemyToShoot);
 
             updateGameComponents(gameTime);
-            //for (int i = 0; i < GameComponents.Count; i++)
-            //{
-            //    if (GameComponents[i] is Ivulnerable)
-            //    {
-            //        if (GameComponents[i] is EnemyBase)
-            //        {
-            //            checkIfBulletHitEnemy(GameComponents[i] as EnemyBase);
-            //        }
-            //        else
-            //        {
-            //            checkIfBulletHitSpaceShip();
-            //        }
-            //    }
-
-            //    GameComponents[i].Update(gameTime);
-            //}
 
             checkIfEnemyNeedMoveGapAndUpdate();
 
@@ -479,10 +463,8 @@ namespace Game1
                         (currentBullet.Position.Y > m_Spaceship.Position.Y && currentBullet.Position.Y < m_Spaceship.Position.Y + m_Spaceship.Texture.Height))
                     {
                         m_Spaceship.IsHitted = true;
-                        //m_Spaceship.Position = ;
                         initSpaceShipPosition();
 
-                        //m_Score += (int)enemy.Type;
                         m_NumberOfSouls--;
                         m_Score -= 1900;
                         currentBullet.Dispose();
@@ -541,14 +523,14 @@ namespace Game1
         private bool isEnemyNextMoveIsFloor()
         {
             bool isNextMoveIsFloor = false;
-            float nextEnemyPosition;
+            float nextEnemyYPosition;
 
             foreach (var enemiesRow in m_EnemiesList)
             {
                 foreach (var enemy in enemiesRow)
                 {
-                    nextEnemyPosition = enemy.Position.Y; // + (enemy.TextureEnemy.Height / 2);
-                    if (nextEnemyPosition >= this.GraphicsDevice.Viewport.Height - enemy.Texture.Height)
+                    nextEnemyYPosition = enemy.Position.Y; // + (enemy.TextureEnemy.Height / 2);
+                    if ((nextEnemyYPosition >= this.GraphicsDevice.Viewport.Height - enemy.Texture.Height))
                     {
                         isNextMoveIsFloor = true;
                     }
@@ -557,6 +539,11 @@ namespace Game1
 
             return isNextMoveIsFloor;
         }
+
+        //private bool IsNextMoveIsSpaceShip(Enemy enemy)
+        //{
+        //    if (enemy.Position.X)
+        //}
 
         private bool isEnemyNextMoveIsWallAndUpdateGap()
         {
