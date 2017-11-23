@@ -22,7 +22,7 @@ namespace Game1
 
         public float Direction { get; set; }
 
-        public Enemy(SpaceInvaders spaceInvaders) : base(spaceInvaders)
+        public Enemy(Game spaceInvaders) : base(spaceInvaders)
         {
             EnemyMovementStatus = eEnemyMovementOptions.MoveRegular;
             Direction = 1f;
@@ -42,13 +42,15 @@ namespace Game1
             Bullet.eBulletType bulletType = Bullet.eBulletType.Enemy;
 
             Bullet bullet = new Bullet(bulletType, Game as SpaceInvaders);
-            bullet.LoadContent((Game as SpaceInvaders).Content);
+            //bullet.LoadContent((Game as SpaceInvaders).Content);
+            (Game as SpaceInvaders).Components.Add(bullet);
             bullet.Position = new Vector2(Position.X + Texture.Width / 2 - 1, Position.Y);
-            (Game as SpaceInvaders).GameComponents.Add(bullet);
+            
         }
 
         public override void Update(GameTime gameTime)
         {
+            (Game as SpaceInvaders).checkIfBulletHitSprite(this);
             m_TimeToNextBlink += gameTime.ElapsedGameTime.TotalSeconds;
 
             if (m_TimeToNextBlink >= Enemy.speedMovement)
@@ -78,6 +80,11 @@ namespace Game1
                 m_TimeToNextBlink -= Enemy.speedMovement;
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            return "Enemy";
         }
 
         //public override void Draw(GameTime gameTime, SpriteBatch spriteBatch, Entity entity)

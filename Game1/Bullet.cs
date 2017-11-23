@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Game1
 {
-    public class Bullet : Entity, IDisposable
+    public class Bullet : Sprite
     {
         public static int s_NumberOfSpaceShipBullets { get; set; }
 
@@ -19,21 +19,21 @@ namespace Game1
 
         private const int r_MovementSpeed = 150;
 
-        public Bullet(eBulletType bulletType, SpaceInvaders spaceInveders) : base(spaceInveders)
+        public Bullet(eBulletType bulletType, Game game) : base(game)
         {
             this.BullletType = bulletType;
             Color = Color.Blue;
             
-            if(bulletType == eBulletType.SpaceShip)
+            if(bulletType == eBulletType.Spaceship)
             {
                 s_NumberOfSpaceShipBullets++;
                 Color = Color.Red;
             }
         }
 
-        public override void LoadContent(ContentManager i_content)
+        protected override void LoadContent()
         {
-            Texture = i_content.Load<Texture2D>(ImagePathProvider.BulletPathImage);
+            Texture = (Game as SpaceInvaders).Content.Load<Texture2D>(ImagePathProvider.BulletPathImage);
             
         }
 
@@ -43,7 +43,7 @@ namespace Game1
             {
                 Dispose();
             }
-            else if(BullletType == eBulletType.SpaceShip)
+            else if(BullletType == eBulletType.Spaceship)
             {
                 Position = new Vector2(Position.X, Position.Y - (r_MovementSpeed * (float)gameTime.ElapsedGameTime.TotalSeconds));
             }
@@ -53,7 +53,7 @@ namespace Game1
             }
         }
 
-        protected virtual void Dispose(bool disposing)
+        protected override void Dispose(bool disposing)
         {
             // Check to see if Dispose has already been called.
             if (!this.disposed)
@@ -66,7 +66,7 @@ namespace Game1
                     //component.Dispose();
                 }
 
-                if(this.BullletType == eBulletType.SpaceShip)
+                if (this.BullletType == eBulletType.Spaceship)
                 {
                     s_NumberOfSpaceShipBullets--;
                 }
@@ -75,17 +75,19 @@ namespace Game1
                 disposed = true;
 
             }
+
+           // base.Dispose();
         }
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+        //public override void Dispose()
+        //{
+        //    Dispose(true);
+        //    GC.SuppressFinalize(this);
+        //}
 
         public enum eBulletType
         {
-            SpaceShip,
+            Spaceship,
             Enemy
         }
     }

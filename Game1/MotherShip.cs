@@ -18,9 +18,9 @@ namespace Game1
             Type = eEnemyTypes.MotherShip;
         }
 
-        public override void LoadContent(ContentManager i_content)
+        protected override void LoadContent()
         {
-            Texture = i_content.Load<Texture2D>(ImagePathProvider.EnemyiesPathImageDictionary[EnemyBase.eEnemyTypes.MotherShip]);
+            Texture = (Game as SpaceInvaders).Content.Load<Texture2D>(ImagePathProvider.EnemyiesPathImageDictionary[EnemyBase.eEnemyTypes.MotherShip]);
             Color = Color.White;
         }
 

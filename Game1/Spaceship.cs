@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Game1
 {
-    public class Spaceship : Entity, IShootable, Ivulnerable
+    public class Spaceship : Sprite, IShootable, Ivulnerable
     {
         public float Direction { get; set; }
 
@@ -20,14 +20,19 @@ namespace Game1
         private const int m_MinPossibleFlyingBullets = 4;
 
 
-        public Spaceship(SpaceInvaders spaceInvaders) : base(spaceInvaders)
+        public Spaceship(Game spaceInvaders) : base(spaceInvaders)
         {
 
         }
 
-        public override void LoadContent(ContentManager i_content)
+        public override void Initialize()
         {
-            Texture = i_content.Load<Texture2D>(ImagePathProvider.SpaceShipPathImage);
+            base.Initialize();
+        }
+
+        protected override void LoadContent()
+        {
+            Texture = (Game as SpaceInvaders).Content.Load<Texture2D>(ImagePathProvider.SpaceShipPathImage);
             Color = Color.White;
         }
 
@@ -61,12 +66,12 @@ namespace Game1
 
         public void Shoot()
         {
-            Bullet.eBulletType bulletType = Bullet.eBulletType.SpaceShip;
+            Bullet.eBulletType bulletType = Bullet.eBulletType.Spaceship;
 
             Bullet bullet = new Bullet(bulletType, Game as SpaceInvaders);
-            bullet.LoadContent((Game as SpaceInvaders).Content);
+            //bullet.LoadContent((Game as SpaceInvaders).Content);
+            (Game as SpaceInvaders).Components.Add(bullet);
             bullet.Position = new Vector2(Position.X + Texture.Width / 2 - 1, Position.Y);
-            (Game as SpaceInvaders).GameComponents.Add(bullet);
         }
 
         private void shootStatus()
@@ -81,6 +86,11 @@ namespace Game1
         private bool isPossibleToShoot()
         {
             return Bullet.s_NumberOfSpaceShipBullets < m_MinPossibleFlyingBullets;
+        }
+
+        public override string ToString()
+        {
+            return "Spaceship";
         }
     }
 }
