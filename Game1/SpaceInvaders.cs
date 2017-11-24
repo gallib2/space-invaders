@@ -518,10 +518,10 @@ namespace Game1
             return isNextMoveIsFloor;
         }
 
-        //private bool IsNextMoveIsSpaceShip(Enemy enemy)
-        //{
-        //    if (enemy.Position.X)
-        //}
+        private bool IsNextMoveIsSpaceShip(Enemy enemy)
+        {
+            
+        }
 
         private bool isEnemyNextMoveIsWallAndUpdateGap()
         {
