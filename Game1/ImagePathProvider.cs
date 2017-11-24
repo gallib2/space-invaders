@@ -46,14 +46,6 @@ namespace Game1
             EnemyiesPathImageDictionary[EnemyBase.eEnemyTypes.Enemy3] = @"StarWars\Star_Wars_-_Darth_Vader";
             EnemyiesPathImageDictionary[EnemyBase.eEnemyTypes.MotherShip] = @"Sprites\MotherShip_32x120";
         }
-
-
-        //public enum eEnemyTypes
-        //{
-        //    Enemy1,
-        //    Enemy2,
-        //    Enemy3,
-        //    MotherShip
-        //}
+       
     }
 }

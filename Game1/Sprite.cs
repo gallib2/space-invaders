@@ -23,13 +23,9 @@ namespace Game1
         {
             //this.Game = game;
             IsVisible = true;
+            Color = Color.White;
         }
-
-        //protected override void LoadContent(ContentManager i_content)
-        //{
-
-        //}
-
+        
         protected override void LoadContent()
         {
             base.LoadContent();

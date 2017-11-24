@@ -22,10 +22,6 @@ namespace Game1
         GraphicsDeviceManager graphics;
         public SpriteBatch SpriteBatch { get; set; }
 
-        //public List<Sprite> GameComponents { get; set; }
-        //private List<Component> GameComponents;
-        //public GameComponentCollection GameComponents { get; }
-
         List<List<Sprite>> m_EnemiesList = new List<List<Sprite>>();
         public float GapToWall { get; set; }
         int m_EnemyNumOfRows = 5;
@@ -48,7 +44,7 @@ namespace Game1
         private const int k_MinTimeMotherShipToPass = 10;
         private const int k_MaxTimeMotherShipToPass = 15;
 
-        Texture2D m_TextureBackground;
+        //Texture2D m_TextureBackground;
         Vector2 m_PositionBackground;
         Color m_TintBackground = Color.White;
 
@@ -61,7 +57,7 @@ namespace Game1
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
 
-            //GameComponents = new GameComponentCollection();
+            Components.Add(new Background(this));
 
             for (int i = 0; i < m_EnemyNumOfRows; i++)
             {
@@ -96,12 +92,7 @@ namespace Game1
             // Create a new SpriteBatch, which can be used to draw textures.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
-            m_TextureBackground = Content.Load<Texture2D>(ImagePathProvider.BackgroundPathImage);
-
-            //for (int i = 0; i < GameComponents.Count; i++)
-            //{
-            //    GameComponents[i].LoadContent(Content);
-            //}
+            //m_TextureBackground = Content.Load<Texture2D>(ImagePathProvider.BackgroundPathImage);
 
             base.LoadContent();
 
@@ -175,7 +166,7 @@ namespace Game1
         }
 
         protected override void Update(GameTime gameTime)
-        {
+            {
             // get the current input devices state:
             int timeMotherShipToPass = gameTime.TotalGameTime.Seconds - m_PrevTimeMotherShipPass;
             int timeEnemyToShoot = gameTime.TotalGameTime.Seconds - m_PrevTimeEnemyShot;
@@ -187,6 +178,7 @@ namespace Game1
             if (this.IsGameOver || InputStateProvider.CurrKeyboardState.IsKeyDown(Keys.Escape) || isEnemyNextMoveIsFloor())
             {
                 handleGameOver();
+                return;
             }
 
             isMotherShipNeedToPass(gameTime, timeMotherShipToPass);
@@ -221,40 +213,11 @@ namespace Game1
             {
                 if (Components[i] is Ivulnerable)
                 {
-                    //Bullet.eBulletType spriteBulletType = (Bullet.eBulletType)Enum.Parse(typeof(Bullet.eBulletType), Components[i].ToString());
                     checkIfBulletHitSprite((Components[i] as Sprite));
-                    //if (Components[i] is EnemyBase)
-                    //{
-                    //    checkIfBulletHitEnemy(Components[i] as EnemyBase);
-                    //}
-                    //else
-                    //{
-
-                    //    checkIfBulletHitSpaceShip();
-                    //}
                 }
             }
         }
-
-        //private void updateGameComponents(GameTime gameTime)
-        //{
-        //    for (int i = 0; i < GameComponents.Count; i++)
-        //    {
-        //        if (GameComponents[i] is Ivulnerable)
-        //        {
-        //            if (GameComponents[i] is EnemyBase)
-        //            {
-        //                checkIfBulletHitEnemy(GameComponents[i] as EnemyBase);
-        //            }
-        //            else
-        //            {
-        //                checkIfBulletHitSpaceShip();
-        //            }
-        //        }
-
-        //        GameComponents[i].Update(gameTime);
-        //    }
-        //}
+        
 
         private void checkIfAllEnemiesDead()
         {
@@ -277,22 +240,22 @@ namespace Game1
             }
         }
 
-        private Bullet.eBulletType getBulletType(Sprite entity)
-        {
-            Bullet.eBulletType bulletType;
+        //private Bullet.eBulletType getBulletType(Sprite entity)
+        //{
+        //    Bullet.eBulletType bulletType;
 
-            if (entity is Enemy)
-            {
-                bulletType = Bullet.eBulletType.Enemy;
-            }
-            else
-            {
-                bulletType = Bullet.eBulletType.Spaceship;
-            }
+        //    if (entity is Enemy)
+        //    {
+        //        bulletType = Bullet.eBulletType.Enemy;
+        //    }
+        //    else
+        //    {
+        //        bulletType = Bullet.eBulletType.Spaceship;
+        //    }
 
-            return bulletType;
+        //    return bulletType;
 
-        }
+        //}
 
         private bool isPossibleToShoot(Bullet.eBulletType bulletType)
         {
@@ -411,8 +374,8 @@ namespace Game1
             {
                 foreach (var enemy in enemiesRow)
                 {
-                    //checkIfBulletHitEnemy(enemy as Enemy);
-                    checkIfBulletHitSprite(enemy);
+                    //checkIfBulletHitSprite(enemy);
+
                     //if (m_NumberOfHittedEnemies % 3 == 0)
                     //{
                     //    Enemy.speedMovement = Enemy.speedMovement * 0.6f;
@@ -457,29 +420,6 @@ namespace Game1
             return randomRowAndCol;
         }
 
-        private void checkIfBulletHitSpaceShip()
-        {
-            for (int i = 0; i < Components.Count; i++)
-            {
-                if (Components[i] is Bullet && (Components[i] as Bullet).BullletType == Bullet.eBulletType.Enemy)
-                {
-                    Bullet currentBullet = (Components[i] as Bullet);
-                    if ((currentBullet.Position.X > m_Spaceship.Position.X && currentBullet.Position.X < m_Spaceship.Position.X + m_Spaceship.Texture.Width) &&
-                        (currentBullet.Position.Y > m_Spaceship.Position.Y && currentBullet.Position.Y < m_Spaceship.Position.Y + m_Spaceship.Texture.Height))
-                    {
-                        m_Spaceship.IsHitted = true;
-
-                        //initSpaceShipPosition();
-                        //m_NumberOfSouls--;
-                        //m_Score -= 1900;
-
-                        currentBullet.Dispose();
-                        Components.Remove(currentBullet);
-                    }
-                }
-            }
-        }
-
         public void checkIfBulletHitSprite(Sprite sprite)
         {
             Bullet.eBulletType spriteBulletType = (Bullet.eBulletType)Enum.Parse(typeof(Bullet.eBulletType), sprite.ToString());
@@ -518,37 +458,6 @@ namespace Game1
                     break;
                 default:
                     break;
-            }
-        }
-
-        public void checkIfBulletHitEnemy(Sprite sprite)
-        {
-            if (sprite.IsVisible)
-            {
-                for (int i = 0; i < Components.Count; i++)
-                {
-                    if (Components[i] is Bullet && (Components[i] as Bullet).BullletType == Bullet.eBulletType.Spaceship)
-                    {
-                        Bullet currentBullet = (Components[i] as Bullet);
-                        Rectangle bulletRect = new Rectangle((int)currentBullet.Position.X, (int)currentBullet.Position.Y, currentBullet.Texture.Width, currentBullet.Texture.Height);
-                        Rectangle spriteRect = new Rectangle((int)sprite.Position.X, (int)sprite.Position.Y, sprite.Texture.Width, sprite.Texture.Height);
-
-                        if (bulletRect.Intersects(spriteRect))
-                        {
-                            (sprite as Ivulnerable).IsHitted = true;
-                            //(enemy as EnemyBase).IsVisible = false;
-
-                            //m_Score += (int)enemy.Type;
-                            //if (enemy is Enemy)
-                            //{
-                            //    m_NumberOfHittedEnemies++;
-                            //}
-
-                            currentBullet.Dispose();
-                            Components.Remove(currentBullet);
-                        }
-                    }
-                }
             }
         }
 
@@ -626,13 +535,16 @@ namespace Game1
                 {
                     foreach (var enemy in enemiesRow)
                     {
-                        nextEnemyPosition = enemy.Position.X + (enemy.Texture.Width / 2);
-                        if (nextEnemyPosition > this.GraphicsDevice.Viewport.Width - enemy.Texture.Width)
+                        if (enemy.IsVisible)
                         {
-                            isNextMoveIsWall = true;
-                            (enemy as Enemy).EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveGap;
-                            this.GapToWall = this.GraphicsDevice.Viewport.Width - enemy.Position.X - enemy.Texture.Width;
-                            IsCanEnemyMatrixMoveRegular = false;
+                            nextEnemyPosition = enemy.Position.X + (enemy.Texture.Width / 2);
+                            if (nextEnemyPosition > this.GraphicsDevice.Viewport.Width - enemy.Texture.Width)
+                            {
+                                isNextMoveIsWall = true;
+                                (enemy as Enemy).EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveGap;
+                                this.GapToWall = this.GraphicsDevice.Viewport.Width - enemy.Position.X - enemy.Texture.Width;
+                                IsCanEnemyMatrixMoveRegular = false;
+                            }
                         }
                     }
                 }
@@ -644,13 +556,17 @@ namespace Game1
                 {
                     foreach (var enemy in enemiesRow)
                     {
-                        nextEnemyPosition = enemy.Position.X - (enemy.Texture.Width / 2);
-                        if (nextEnemyPosition < 0)
+                        if (enemy.IsVisible)
                         {
-                            isNextMoveIsWall = true;
-                            this.GapToWall = -enemy.Position.X;
-                            IsCanEnemyMatrixMoveRegular = false;
+                            nextEnemyPosition = enemy.Position.X - (enemy.Texture.Width / 2);
+                            if (nextEnemyPosition < 0)
+                            {
+                                isNextMoveIsWall = true;
+                                this.GapToWall = -enemy.Position.X;
+                                IsCanEnemyMatrixMoveRegular = false;
+                            }
                         }
+    
                     }
                 }
             }
@@ -660,18 +576,13 @@ namespace Game1
 
         #endregion
 
-        /// <summary>
-        /// This is called when the game should draw itself.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
             graphics.GraphicsDevice.Clear(Color.Black);
 
             SpriteBatch.Begin();
-            SpriteBatch.Draw(m_TextureBackground, m_PositionBackground, m_TintBackground); // tinting with alpha channel
-                                                                                           //spriteBatch.Draw(m_Enemy.TextureEnemy, m_Enemy.Position, Color.LightPink); // purple ship
-                                                                                           ///spriteBatch.Draw(m_TextureShip, m_PositionShip, Color.White); //no tinting
+
+            base.Draw(gameTime);
 
             foreach (var enemiesRow in m_EnemiesList)
             {
@@ -683,10 +594,9 @@ namespace Game1
                     }
                 }
             }
-            base.Draw(gameTime);
+
+            
             SpriteBatch.End();
-
-
         }
     }
 }

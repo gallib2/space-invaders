@@ -16,8 +16,6 @@ namespace Game1
         public static float speedMovement { get; set; }
         public readonly float sr_TimePercentBetweenJumps = 0.9f;
         private double m_TimeToNextBlink;
-        //public bool IsHitted { get; set; }
-        //public bool IsVisible { get; set; }
 
 
         public float Direction { get; set; }
@@ -42,7 +40,6 @@ namespace Game1
             Bullet.eBulletType bulletType = Bullet.eBulletType.Enemy;
 
             Bullet bullet = new Bullet(bulletType, Game as SpaceInvaders);
-            //bullet.LoadContent((Game as SpaceInvaders).Content);
             (Game as SpaceInvaders).Components.Add(bullet);
             bullet.Position = new Vector2(Position.X + Texture.Width / 2 - 1, Position.Y);
             
