@@ -21,7 +21,6 @@ namespace Game1
         protected override void LoadContent()
         {
             Texture = Game.Content.Load<Texture2D>(ImagePathProvider.EnemyiesPathImageDictionary[EnemyBase.eEnemyTypes.MotherShip]);
-            //Color = Color.White;
         }
 
         public override void Update(GameTime gameTime)

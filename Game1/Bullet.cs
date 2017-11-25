@@ -19,6 +19,8 @@ namespace Game1
 
         private const int r_MovementSpeed = 150;
 
+        //public bool IsHitted { get; set; }
+
         public Bullet(eBulletType bulletType, Game game) : base(game)
         {
             this.BullletType = bulletType;
@@ -29,6 +31,7 @@ namespace Game1
                 s_NumberOfSpaceShipBullets++;
                 Color = Color.Red;
             }
+
         }
 
         protected override void LoadContent()
@@ -84,11 +87,14 @@ namespace Game1
         //    Dispose(true);
         //    GC.SuppressFinalize(this);
         //}
+        
 
         public enum eBulletType
         {
             Spaceship,
-            Enemy
+            Enemy,
         }
+
+
     }
 }

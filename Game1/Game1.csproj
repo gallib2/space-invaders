@@ -45,9 +45,9 @@
     <Compile Include="Bullet.cs" />
     <Compile Include="EnemyBase.cs" />
     <Compile Include="Enemy.cs" />
+    <Compile Include="EnemyCollection.cs" />
+    <Compile Include="EnemyComponent.cs" />
     <Compile Include="Sprite.cs" />
-    <Compile Include="GameAssets.cs" />
-    <Compile Include="IGameObjects.cs" />
     <Compile Include="InputStateProvider.cs" />
     <Compile Include="IShootable.cs" />
     <Compile Include="Ivulnerable.cs" />

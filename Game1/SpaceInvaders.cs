@@ -9,6 +9,8 @@ namespace Game1
 {
     public class SpaceInvaders : Game
     {
+        private EnemyCollection enemiesCollection;
+
         public delegate void DelegateActionToCommit(Enemy enemy);
         public delegate bool DelegateCheckToCommit(Enemy enemy);
 
@@ -22,7 +24,7 @@ namespace Game1
         GraphicsDeviceManager graphics;
         public SpriteBatch SpriteBatch { get; set; }
 
-        List<List<Sprite>> m_EnemiesList = new List<List<Sprite>>();
+        //List<List<Sprite>> m_EnemiesList = new List<List<Sprite>>();
         public float GapToWall { get; set; }
         int m_EnemyNumOfRows = 5;
         int m_EnemyNumOfColumns = 9;
@@ -44,7 +46,6 @@ namespace Game1
         private const int k_MinTimeMotherShipToPass = 10;
         private const int k_MaxTimeMotherShipToPass = 15;
 
-        //Texture2D m_TextureBackground;
         Vector2 m_PositionBackground;
         Color m_TintBackground = Color.White;
 
@@ -56,17 +57,24 @@ namespace Game1
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-
             Components.Add(new Background(this));
 
-            for (int i = 0; i < m_EnemyNumOfRows; i++)
+            //for (int i = 0; i < m_EnemyNumOfRows; i++)
+            //{
+            //    m_EnemiesList.Add(new List<Sprite>());
+            //    for (int j = 0; j < m_EnemyNumOfColumns; j++)
+            //    {
+            //        m_EnemiesList[i].Add(new Enemy(this));
+            //    }
+            //}
+
+            enemiesCollection = new EnemyCollection(this);
+            for (int i = 0; i < m_EnemyNumOfRows * m_EnemyNumOfColumns; i++)
             {
-                m_EnemiesList.Add(new List<Sprite>());
-                for (int j = 0; j < m_EnemyNumOfColumns; j++)
-                {
-                    m_EnemiesList[i].Add(new Enemy(this));
-                }
+                enemiesCollection.Add(new Enemy(this));
             }
+
+            Components.Add(enemiesCollection);
 
             Enemy.IsEnemyMoveRight = true;
             Enemy.speedMovement = 0.5f;
@@ -92,11 +100,11 @@ namespace Game1
             // Create a new SpriteBatch, which can be used to draw textures.
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
-            //m_TextureBackground = Content.Load<Texture2D>(ImagePathProvider.BackgroundPathImage);
+            loadEnemyContent();
 
             base.LoadContent();
 
-            loadEnemyContent();
+
             InitPositions();
         }
 
@@ -109,17 +117,35 @@ namespace Game1
 
             initSpaceShipPosition();
 
-            // TODO : const row and col...
-            int j = 0;
-            for (int i = 0; i < 5; i++)
-            {
-                for (j = 0; j < 9; j++)
-                {
-                    // TODO : fix the spaces between the enemies
-                    x = m_EnemiesList[i][j].Texture.Width / 2 + (j * m_EnemiesList[i][j].Texture.Width * 2);
-                    y = m_EnemiesList[i][j].Texture.Height * 3 + (i * m_EnemiesList[i][j].Texture.Height);
 
-                    m_EnemiesList[i][j].Position = new Vector2(x, y);
+            //int j = 0;
+            //for (int i = 0; i < m_EnemyNumOfRows; i++)
+            //{
+            //    for (j = 0; j < m_EnemyNumOfColumns; j++)
+            //    {
+            //        // TODO : fix the spaces between the enemies
+            //        x = m_EnemiesList[i][j].Texture.Width / 2 + (j * m_EnemiesList[i][j].Texture.Width * 2);
+            //        y = m_EnemiesList[i][j].Texture.Height * 3 + (i * m_EnemiesList[i][j].Texture.Height);
+
+            //        m_EnemiesList[i][j].Position = new Vector2(x, y);
+            //    }
+            //}
+
+            // TODO : Const for 32 and etc....
+            int i = 0;
+            x = 32 * 0.6f;
+            y = 3 * 32;
+            foreach (var enemy in enemiesCollection)
+            {
+                enemy.Position = new Vector2(x, y);
+
+                x += enemy.Texture.Width + enemy.Texture.Width * 0.6f;
+
+                i++;
+                if (i % m_EnemyNumOfColumns == 0)
+                {
+                    y += enemy.Texture.Height + enemy.Texture.Height * 0.6f;
+                    x = enemy.Texture.Width * 0.6f;
                 }
             }
 
@@ -153,7 +179,6 @@ namespace Game1
 
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
             ImagePathProvider.InitializeImagesPath();
             //ImagePathProvider.InitializeImagesPathStarWars();
             IsCanEnemyMatrixMoveRegular = true;
@@ -166,16 +191,17 @@ namespace Game1
         }
 
         protected override void Update(GameTime gameTime)
-            {
+        {
             // get the current input devices state:
             int timeMotherShipToPass = gameTime.TotalGameTime.Seconds - m_PrevTimeMotherShipPass;
             int timeEnemyToShoot = gameTime.TotalGameTime.Seconds - m_PrevTimeEnemyShot;
 
             checkScore();
             checkIfAllEnemiesDead();
+            checkIfEnemiesIntersectsSpaceship();
 
             // Allows the game to exit by GameButton 'back' button or Esc:
-            if (this.IsGameOver || InputStateProvider.CurrKeyboardState.IsKeyDown(Keys.Escape) || isEnemyNextMoveIsFloor())
+            if (this.IsGameOver || InputStateProvider.CurrKeyboardState.IsKeyDown(Keys.Escape) /*|| isEnemyNextMoveIsFloor()*/)
             {
                 handleGameOver();
                 return;
@@ -184,12 +210,11 @@ namespace Game1
             isMotherShipNeedToPass(gameTime, timeMotherShipToPass);
             checkIfEnemyTimeToShoot(gameTime, timeEnemyToShoot);
 
-            // updateGameComponents(gameTime);
             checkIfComponentsHitByBullet();
 
             checkIfEnemyNeedMoveGapAndUpdate();
 
-            enemyUpdate(gameTime);
+            //enemyUpdate(gameTime);
             // checkIfBulletHitEnemy(enemy as Enemy);
 
             base.Update(gameTime);
@@ -211,21 +236,17 @@ namespace Game1
         {
             for (int i = 0; i < Components.Count; i++)
             {
-                if (Components[i] is Ivulnerable)
+                if (Components[i] is Ivulnerable &&  (!(Components[i] is EnemyCollection)))
                 {
-                    checkIfBulletHitSprite((Components[i] as Sprite));
+                    //if (Components[i] is Bullet)
+                    //{
+                    //    checkIfBulletHitBullet(Components[i] as Sprite);
+                    //}
+                    checkIfBulletHitSprite(Components[i] as Sprite);
                 }
             }
         }
-        
 
-        private void checkIfAllEnemiesDead()
-        {
-            if (m_NumberOfHittedEnemies == (m_EnemyNumOfRows * m_EnemyNumOfColumns))
-            {
-                IsGameOver = true;
-            }
-        }
 
         private void checkScore()
         {
@@ -239,23 +260,6 @@ namespace Game1
                 IsGameOver = true;
             }
         }
-
-        //private Bullet.eBulletType getBulletType(Sprite entity)
-        //{
-        //    Bullet.eBulletType bulletType;
-
-        //    if (entity is Enemy)
-        //    {
-        //        bulletType = Bullet.eBulletType.Enemy;
-        //    }
-        //    else
-        //    {
-        //        bulletType = Bullet.eBulletType.Spaceship;
-        //    }
-
-        //    return bulletType;
-
-        //}
 
         private bool isPossibleToShoot(Bullet.eBulletType bulletType)
         {
@@ -284,6 +288,12 @@ namespace Game1
                 this.Exit();
             }
         }
+
+        private Rectangle getRectangleFromSprite(Sprite sprite)
+        {
+            return new Rectangle((int)sprite.Position.X, (int)sprite.Position.Y, sprite.Texture.Width, sprite.Texture.Height);
+        }
+
 
         #region MotherShip
 
@@ -329,23 +339,38 @@ namespace Game1
 
         #region Enemy
 
-        private void loadEnemyContent()
+        private void checkIfAllEnemiesDead()
         {
-            int i = 0;
-
-            foreach (var enemiesRow in m_EnemiesList)
+            if (m_NumberOfHittedEnemies == (m_EnemyNumOfRows * m_EnemyNumOfColumns))
             {
-                foreach (var enemy in enemiesRow)
-                {
-                    KeyValuePair<string, Color> imageAndColorToLoad = getEnemyImageAndColorAndSetType(i, (enemy as Enemy));
-                    enemy.Texture = Content.Load<Texture2D>(imageAndColorToLoad.Key);
-                    enemy.Color = imageAndColorToLoad.Value;
-                }
-                i++;
+                IsGameOver = true;
             }
         }
 
-        private KeyValuePair<string, Color> getEnemyImageAndColorAndSetType(int i, Enemy enemy)
+        private void loadEnemyContent()
+        {
+            //int i = 0;
+
+            //foreach (var enemiesRow in m_EnemiesList)
+            //{
+            //    foreach (var enemy in enemiesRow)
+            //    {
+            //        KeyValuePair<string, Color> imageAndColorToLoad = getEnemyImageAndColorAndSetType(i, (enemy as Enemy));
+            //        enemy.Texture = Content.Load<Texture2D>(imageAndColorToLoad.Key);
+            //        enemy.Color = imageAndColorToLoad.Value;
+            //    }
+            //    i++;
+            //}
+
+            //foreach (var enemy in enemiesCollection) // TODO !!
+            //{
+            //    KeyValuePair<string, Color> imageAndColorToLoad = getEnemyImageAndColorAndSetType(0, (enemy as Enemy));
+            //    enemy.Texture = Content.Load<Texture2D>(imageAndColorToLoad.Key);
+            //    enemy.Color = imageAndColorToLoad.Value;
+            //}
+        }
+
+        public KeyValuePair<string, Color> getEnemyImageAndColorAndSetType(int i, Enemy enemy)
         {
             KeyValuePair<string, Color> imageAndColorToLoad;
 
@@ -370,29 +395,30 @@ namespace Game1
 
         private void enemyUpdate(GameTime gameTime)
         {
-            foreach (var enemiesRow in m_EnemiesList)
-            {
-                foreach (var enemy in enemiesRow)
-                {
-                    //checkIfBulletHitSprite(enemy);
+            //foreach (var enemiesRow in m_EnemiesList)
+            //{
+            //    foreach (var enemy in enemiesRow)
+            //    {
+            //        //checkIfBulletHitSprite(enemy);
 
-                    //if (m_NumberOfHittedEnemies % 3 == 0)
-                    //{
-                    //    Enemy.speedMovement = Enemy.speedMovement * 0.6f;
-                    //}
-                    //checkIfEnemyTimeToShoot(enemy as Enemy, gameTime);
-                    enemy.Update(gameTime);
-                }
-            }
+            //        //if (m_NumberOfHittedEnemies % 3 == 0)
+            //        //{
+            //        //    Enemy.speedMovement = Enemy.speedMovement * 0.6f;
+            //        //}
+            //        //checkIfEnemyTimeToShoot(enemy as Enemy, gameTime);
+            //        enemy.Update(gameTime);
+            //    }
+            //}
         }
 
         private void checkIfEnemyTimeToShoot(GameTime gameTime, int timeEnemyToShoot)
         {
             KeyValuePair<int, int> randomRowAndCol = getRandomRowAndCol();
 
-            Sprite enemy = m_EnemiesList[randomRowAndCol.Key][randomRowAndCol.Value];
+            //Sprite enemy = m_EnemiesList[randomRowAndCol.Key][randomRowAndCol.Value];
+            Sprite enemy = enemiesCollection[randomRowAndCol.Key * randomRowAndCol.Value];
 
-            if (enemy.IsVisible)
+            if (enemy.Visible)
             {
                 m_TimeToShoot += gameTime.ElapsedGameTime.TotalSeconds;
                 if (timeEnemyToShoot > 0 && (timeEnemyToShoot % m_TimeEnemyToShoot) == 0)
@@ -409,30 +435,43 @@ namespace Game1
         {
             KeyValuePair<int, int> randomRowAndCol;
 
+            //do
+            //{
+            //    int row = m_RandomTime.Next(0, m_EnemyNumOfRows);
+            //    int col = m_RandomTime.Next(0, m_EnemyNumOfColumns);
+            //    randomRowAndCol = new KeyValuePair<int, int>(row, col);
+
+            //} while (!m_EnemiesList[randomRowAndCol.Key][randomRowAndCol.Value].IsVisible);
+
+            //return randomRowAndCol;
+
+
             do
             {
                 int row = m_RandomTime.Next(0, m_EnemyNumOfRows);
                 int col = m_RandomTime.Next(0, m_EnemyNumOfColumns);
                 randomRowAndCol = new KeyValuePair<int, int>(row, col);
 
-            } while (!m_EnemiesList[randomRowAndCol.Key][randomRowAndCol.Value].IsVisible);
+            } while (!enemiesCollection[randomRowAndCol.Key * randomRowAndCol.Value].Visible);
 
             return randomRowAndCol;
         }
 
         public void checkIfBulletHitSprite(Sprite sprite)
         {
-            Bullet.eBulletType spriteBulletType = (Bullet.eBulletType)Enum.Parse(typeof(Bullet.eBulletType), sprite.ToString());
+            //Bullet.eBulletType spriteBulletType = (Bullet.eBulletType)Enum.Parse(typeof(Bullet.eBulletType), sprite.ToString());
+            Bullet.eBulletType spriteBulletType;
+            bool isParse = Enum.TryParse(sprite.ToString(), out spriteBulletType);
 
-            if (sprite.IsVisible || sprite.Visible)
+            if (sprite.Visible)
             {
                 for (int i = 0; i < Components.Count; i++)
                 {
-                    if (Components[i] is Bullet && (Components[i] as Bullet).BullletType != spriteBulletType)
+                    if (Components[i] is Bullet && isParse && (Components[i] as Bullet).BullletType != spriteBulletType)
                     {
                         Bullet currentBullet = (Components[i] as Bullet);
-                        Rectangle bulletRect = new Rectangle((int)currentBullet.Position.X, (int)currentBullet.Position.Y, currentBullet.Texture.Width, currentBullet.Texture.Height);
-                        Rectangle spriteRect = new Rectangle((int)sprite.Position.X, (int)sprite.Position.Y, sprite.Texture.Width, sprite.Texture.Height);
+                        Rectangle bulletRect = getRectangleFromSprite(currentBullet);
+                        Rectangle spriteRect = getRectangleFromSprite(sprite);
 
                         if (bulletRect.Intersects(spriteRect))
                         {
@@ -445,6 +484,35 @@ namespace Game1
                 }
             }
         }
+
+
+        public void checkIfBulletHitBullet(Sprite sprite)
+        {
+            Bullet.eBulletType spriteBulletType;
+            bool isParse = Enum.TryParse(sprite.ToString(), out spriteBulletType);
+
+            if (sprite.Visible)
+            {
+                for (int i = 0; i < Components.Count; i++)
+                {
+                    if (Components[i] is Bullet && sprite is Bullet && !Components[i].Equals(sprite))
+                    {
+                        Bullet currentBullet = (Components[i] as Bullet);
+                        Rectangle bulletRect = getRectangleFromSprite(currentBullet);
+                        Rectangle spriteRect = getRectangleFromSprite(sprite);
+
+                        if (bulletRect.Intersects(spriteRect))
+                        {
+                            (sprite as Ivulnerable).IsHitted = true;
+                            //doWhenHitBulletHitSprite(spriteBulletType, sprite);
+                            currentBullet.Dispose();
+                            Components.Remove(currentBullet);
+                        }
+                    }
+                }
+            }
+        }
+
 
         private void doWhenHitBulletHitSprite(Bullet.eBulletType sprtieBulletType, Sprite sprite)
         {
@@ -463,7 +531,7 @@ namespace Game1
 
         private void doWhenHitEnemy(EnemyBase enemy)
         {
-            enemy.IsVisible = false;
+            enemy.Visible = false;
             enemy.Visible = false;
 
             m_Score += (int)enemy.Type;
@@ -482,17 +550,29 @@ namespace Game1
 
         private void checkIfEnemyNeedMoveGapAndUpdate()
         {
+            //if (IsCanEnemyMatrixMoveRegular)
+            //{
+            //    isEnemyNextMoveIsWallAndUpdateGap();
+            //    if (!IsCanEnemyMatrixMoveRegular)
+            //    {
+            //        foreach (var enemiesRow in m_EnemiesList)
+            //        {
+            //            foreach (var enemy in enemiesRow)
+            //            {
+            //                (enemy as Enemy).EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveGap;
+            //            }
+            //        }
+            //    }
+            //}
+
             if (IsCanEnemyMatrixMoveRegular)
             {
                 isEnemyNextMoveIsWallAndUpdateGap();
                 if (!IsCanEnemyMatrixMoveRegular)
                 {
-                    foreach (var enemiesRow in m_EnemiesList)
+                    foreach (var enemy in enemiesCollection)
                     {
-                        foreach (var enemy in enemiesRow)
-                        {
-                            (enemy as Enemy).EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveGap;
-                        }
+                        enemy.EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveGap;
                     }
                 }
             }
@@ -503,24 +583,64 @@ namespace Game1
             bool isNextMoveIsFloor = false;
             float nextEnemyYPosition;
 
-            foreach (var enemiesRow in m_EnemiesList)
+            foreach (var enemy in enemiesCollection)
             {
-                foreach (var enemy in enemiesRow)
+                nextEnemyYPosition = enemy.Position.Y; // + (enemy.TextureEnemy.Height / 2);
+                if ((nextEnemyYPosition >= this.GraphicsDevice.Viewport.Height - enemy.Texture.Height))
                 {
-                    nextEnemyYPosition = enemy.Position.Y; // + (enemy.TextureEnemy.Height / 2);
-                    if ((nextEnemyYPosition >= this.GraphicsDevice.Viewport.Height - enemy.Texture.Height))
-                    {
-                        isNextMoveIsFloor = true;
-                    }
+                    isNextMoveIsFloor = true;
                 }
             }
+
+            //foreach (var enemiesRow in m_EnemiesList)
+            //{
+            //    foreach (var enemy in enemiesRow)
+            //    {
+            //        nextEnemyYPosition = enemy.Position.Y; // + (enemy.TextureEnemy.Height / 2);
+            //        if ((nextEnemyYPosition >= this.GraphicsDevice.Viewport.Height - enemy.Texture.Height))
+            //        {
+            //            isNextMoveIsFloor = true;
+            //        }
+            //    }
+            //}
 
             return isNextMoveIsFloor;
         }
 
-        private bool IsNextMoveIsSpaceShip(Enemy enemy)
+        private void checkIfEnemiesIntersectsSpaceship()
         {
-            
+            //foreach (var enemiesRow in m_EnemiesList)
+            //{
+            //    foreach (var enemy in enemiesRow)
+            //    {
+            //        if ((enemy as Enemy).IsVisible)
+            //        {
+            //            if (IsEnemyNextMoveIsSpaceShip((enemy as Enemy)))
+            //            {
+            //                IsGameOver = true;
+            //            }
+            //        }
+            //    }
+            //}
+
+            foreach (EnemyComponent enemy in enemiesCollection)
+            {
+                if (enemy.Visible)
+                {
+                    if (IsEnemyNextMoveIsSpaceShip((enemy as Enemy)))
+                    {
+                        IsGameOver = true;
+                    }
+                }
+            }
+        }
+
+        private bool IsEnemyNextMoveIsSpaceShip(Enemy enemy)
+        {
+            Rectangle enemyRect = getRectangleFromSprite(enemy);
+            Rectangle spaceshipRect = getRectangleFromSprite(m_Spaceship);
+
+            return enemyRect.Intersects(spaceshipRect);
         }
 
         private bool isEnemyNextMoveIsWallAndUpdateGap()
@@ -531,20 +651,17 @@ namespace Game1
             if (Enemy.IsEnemyMoveRight)
             {
                 // isNextMoveIsWall = checkConditionOnEveryEnemy(isEnemyNextRightMoveIsWallAndUpdateGap);
-                foreach (var enemiesRow in m_EnemiesList)
+                foreach (var enemy in enemiesCollection)
                 {
-                    foreach (var enemy in enemiesRow)
+                    if (enemy.Visible)
                     {
-                        if (enemy.IsVisible)
+                        nextEnemyPosition = enemy.Position.X + (enemy.Texture.Width / 2);
+                        if (nextEnemyPosition > this.GraphicsDevice.Viewport.Width - enemy.Texture.Width)
                         {
-                            nextEnemyPosition = enemy.Position.X + (enemy.Texture.Width / 2);
-                            if (nextEnemyPosition > this.GraphicsDevice.Viewport.Width - enemy.Texture.Width)
-                            {
-                                isNextMoveIsWall = true;
-                                (enemy as Enemy).EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveGap;
-                                this.GapToWall = this.GraphicsDevice.Viewport.Width - enemy.Position.X - enemy.Texture.Width;
-                                IsCanEnemyMatrixMoveRegular = false;
-                            }
+                            isNextMoveIsWall = true;
+                            (enemy as Enemy).EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveGap;
+                            this.GapToWall = this.GraphicsDevice.Viewport.Width - enemy.Position.X - enemy.Texture.Width;
+                            IsCanEnemyMatrixMoveRegular = false;
                         }
                     }
                 }
@@ -552,26 +669,73 @@ namespace Game1
             else
             {
                 //isNextMoveIsWall = checkConditionOnEveryEnemy(isEnemyNextLeftMoveIsWallAndUpdateGap);
-                foreach (var enemiesRow in m_EnemiesList)
+                foreach (var enemy in enemiesCollection)
                 {
-                    foreach (var enemy in enemiesRow)
+                    if (enemy.Visible)
                     {
-                        if (enemy.IsVisible)
+                        nextEnemyPosition = enemy.Position.X - (enemy.Texture.Width / 2);
+                        if (nextEnemyPosition < 0)
                         {
-                            nextEnemyPosition = enemy.Position.X - (enemy.Texture.Width / 2);
-                            if (nextEnemyPosition < 0)
-                            {
-                                isNextMoveIsWall = true;
-                                this.GapToWall = -enemy.Position.X;
-                                IsCanEnemyMatrixMoveRegular = false;
-                            }
+                            isNextMoveIsWall = true;
+                            this.GapToWall = -enemy.Position.X;
+                            IsCanEnemyMatrixMoveRegular = false;
                         }
-    
                     }
+
                 }
             }
 
             return isNextMoveIsWall;
+
+
+
+            //bool isNextMoveIsWall = false;
+            //float nextEnemyPosition;
+
+            //if (Enemy.IsEnemyMoveRight)
+            //{
+            //    // isNextMoveIsWall = checkConditionOnEveryEnemy(isEnemyNextRightMoveIsWallAndUpdateGap);
+            //    foreach (var enemiesRow in m_EnemiesList)
+            //    {
+            //        foreach (var enemy in enemiesRow)
+            //        {
+            //            if (enemy.IsVisible)
+            //            {
+            //                nextEnemyPosition = enemy.Position.X + (enemy.Texture.Width / 2);
+            //                if (nextEnemyPosition > this.GraphicsDevice.Viewport.Width - enemy.Texture.Width)
+            //                {
+            //                    isNextMoveIsWall = true;
+            //                    (enemy as Enemy).EnemyMovementStatus = Enemy.eEnemyMovementOptions.MoveGap;
+            //                    this.GapToWall = this.GraphicsDevice.Viewport.Width - enemy.Position.X - enemy.Texture.Width;
+            //                    IsCanEnemyMatrixMoveRegular = false;
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    //isNextMoveIsWall = checkConditionOnEveryEnemy(isEnemyNextLeftMoveIsWallAndUpdateGap);
+            //    foreach (var enemiesRow in m_EnemiesList)
+            //    {
+            //        foreach (var enemy in enemiesRow)
+            //        {
+            //            if (enemy.IsVisible)
+            //            {
+            //                nextEnemyPosition = enemy.Position.X - (enemy.Texture.Width / 2);
+            //                if (nextEnemyPosition < 0)
+            //                {
+            //                    isNextMoveIsWall = true;
+            //                    this.GapToWall = -enemy.Position.X;
+            //                    IsCanEnemyMatrixMoveRegular = false;
+            //                }
+            //            }
+
+            //        }
+            //    }
+            //}
+
+            //return isNextMoveIsWall;
         }
 
         #endregion
@@ -584,18 +748,17 @@ namespace Game1
 
             base.Draw(gameTime);
 
-            foreach (var enemiesRow in m_EnemiesList)
-            {
-                foreach (var enemy in enemiesRow)
-                {
-                    if ((enemy as Enemy).IsVisible)
-                    {
-                        enemy.Draw(gameTime);
-                    }
-                }
-            }
+            //foreach (var enemiesRow in m_EnemiesList)
+            //{
+            //    foreach (var enemy in enemiesRow)
+            //    {
+            //        if ((enemy as Enemy).IsVisible)
+            //        {
+            //            enemy.Draw(gameTime);
+            //        }
+            //    }
+            //}
 
-            
             SpriteBatch.End();
         }
     }

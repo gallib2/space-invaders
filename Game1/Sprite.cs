@@ -17,12 +17,12 @@ namespace Game1
 
         //public Game Game { get; set; }
 
-        public bool IsVisible { get; set; }
+        //public bool IsVisible { get; set; }
 
         public Sprite(Game game) : base(game)
         {
             //this.Game = game;
-            IsVisible = true;
+            Visible = true;
             Color = Color.White;
         }
         

@@ -17,7 +17,6 @@ namespace Game1
         protected override void LoadContent()
         {
             Texture = Game.Content.Load<Texture2D>(ImagePathProvider.BackgroundPathImage);
-            //Color = Color.White;
             //base.LoadContent();
         }
     }

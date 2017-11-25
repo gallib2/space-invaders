@@ -9,31 +9,31 @@ using Microsoft.Xna.Framework.Input;
 
 namespace Game1
 {
-    public class Enemy : EnemyBase, IShootable
+    public class Enemy : EnemyComponent, IShootable
     {
-        public eEnemyMovementOptions EnemyMovementStatus { get; set; }
-        public static bool IsEnemyMoveRight { get; set; }
-        public static float speedMovement { get; set; }
-        public readonly float sr_TimePercentBetweenJumps = 0.9f;
-        private double m_TimeToNextBlink;
+        //public eEnemyMovementOptions EnemyMovementStatus { get; set; }
+        //public static bool IsEnemyMoveRight { get; set; }
+        //public static float speedMovement { get; set; }
+        //public readonly float sr_TimePercentBetweenJumps = 0.9f;
+        //private double m_TimeToNextBlink;
+        //public float Direction { get; set; }
 
-
-        public float Direction { get; set; }
+        
 
         public Enemy(Game spaceInvaders) : base(spaceInvaders)
         {
-            EnemyMovementStatus = eEnemyMovementOptions.MoveRegular;
-            Direction = 1f;
+            //EnemyMovementStatus = eEnemyMovementOptions.MoveRegular;
+            //Direction = 1f;
             //IsVisible = true;
         }
 
 
-        public enum eEnemyMovementOptions
-        {
-            MoveDown,
-            MoveGap,
-            MoveRegular
-        }
+        //public enum eEnemyMovementOptions
+        //{
+        //    MoveDown,
+        //    MoveGap,
+        //    MoveRegular
+        //}
 
         public void Shoot()
         {
@@ -42,7 +42,27 @@ namespace Game1
             Bullet bullet = new Bullet(bulletType, Game as SpaceInvaders);
             (Game as SpaceInvaders).Components.Add(bullet);
             bullet.Position = new Vector2(Position.X + Texture.Width / 2 - 1, Position.Y);
-            
+        }
+
+        public override void Initialize()
+        {
+            base.Initialize();
+            //LoadContent();
+        }
+
+        protected override void LoadContent()
+        {
+            base.LoadContent();
+            m_NumberOfLoadedEnemies++;
+
+            KeyValuePair<string, Color> imageAndColorToLoad = (Game as SpaceInvaders).getEnemyImageAndColorAndSetType(m_CurrentRowOfLoadedEnemies, this);
+            Texture = (Game as SpaceInvaders).Content.Load<Texture2D>(imageAndColorToLoad.Key);
+            Color = imageAndColorToLoad.Value;
+
+            if(m_NumberOfLoadedEnemies % m_NumberOfColumns == 0)
+            {
+                m_CurrentRowOfLoadedEnemies++;
+            }
         }
 
         public override void Update(GameTime gameTime)
@@ -52,7 +72,7 @@ namespace Game1
 
             if (m_TimeToNextBlink >= Enemy.speedMovement)
             {
-                if (IsVisible)
+                if (Visible)
                 {
                     switch (EnemyMovementStatus)
                     {
@@ -79,30 +99,21 @@ namespace Game1
             }
         }
 
+        public override void Add(EnemyComponent c)
+        {
+            // TODO
+        }
+
+        public override void Remove(EnemyComponent c)
+        {
+            // TODO
+        }
+
         public override string ToString()
         {
             return "Enemy";
         }
-
-        //public override void Draw(GameTime gameTime, SpriteBatch spriteBatch, Entity entity)
-        //{
-        //    spriteBatch.Draw(entity.Texture, entity.Position, entity.Color);
-        //}
-
-        //public void enemyMoveGap()
-        //{
-        //    Position = new Vector2(Position.X + this.Game.GapToWall, Position.Y);
-        //}
-
-        //private void enemyMoveDown()
-        //{
-        //    Position = new Vector2(Position.X, Position.Y + Texture.Height / 2);
-        //}
-
-        //private void enemyMoveRegular()
-        //{
-        //    Position = new Vector2(Position.X + (Enemy.Direction) * (Texture.Width / 2), Position.Y);
-        //}
+        
 
     }
 }
