@@ -18,7 +18,26 @@ namespace Game1
         //private double m_TimeToNextBlink;
         //public float Direction { get; set; }
 
-        
+        private static int m_Width;
+        private static int m_Height;
+
+        public static int Width
+        {
+            get
+            {
+                return m_Width;
+            }
+        }
+
+        public static int Height
+        {
+            get
+            {
+                return m_Height;
+            }
+        }
+
+
 
         public Enemy(Game spaceInvaders) : base(spaceInvaders)
         {
@@ -47,6 +66,9 @@ namespace Game1
         public override void Initialize()
         {
             base.Initialize();
+            m_Width = Texture.Width;
+            m_Height = Texture.Height;
+
             //LoadContent();
         }
 
