@@ -15,13 +15,11 @@ namespace Game1
         public Color Color { get; set; }
         public Texture2D Texture { get; set; }
 
-        //public Game Game { get; set; }
+        public Vector2 Velocity { get; set; }
 
-        //public bool IsVisible { get; set; }
 
         public Sprite(Game game) : base(game)
         {
-            //this.Game = game;
             Visible = true;
             Color = Color.White;
         }

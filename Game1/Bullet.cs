@@ -19,7 +19,7 @@ namespace Game1
 
         private const int r_MovementSpeed = 150;
 
-        //public bool IsHitted { get; set; }
+        public bool IsHitted { get; set; }
 
         public Bullet(eBulletType bulletType, Game game) : base(game)
         {

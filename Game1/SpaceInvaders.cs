@@ -207,11 +207,20 @@ namespace Game1
             {
                 if (Components[i] is Ivulnerable &&  (!(Components[i] is EnemyCollection)))
                 {
-                    //if (Components[i] is Bullet)
-                    //{
-                    //    checkIfBulletHitBullet(Components[i] as Sprite);
-                    //}
                     checkIfBulletHitSprite(Components[i] as Sprite);
+                }
+            }
+
+            checkIfBulletHitByBullet();
+        }
+
+        private void checkIfBulletHitByBullet()
+        {
+            for (int i = 0; i < Components.Count; i++)
+            {
+                if (Components[i] is Bullet && (!(Components[i] is EnemyCollection)))
+                {
+                   checkIfBulletHitBullet(Components[i] as Sprite);
                 }
             }
         }
@@ -223,7 +232,7 @@ namespace Game1
                 m_Score = 0;
                 // m_NumberOfSouls--;
             }
-            if (m_NumberOfSouls < 0)
+            if (m_NumberOfSouls <= 0)
             {
                 IsGameOver = true;
             }
@@ -252,7 +261,6 @@ namespace Game1
 
         public void checkIfBulletHitSprite(Sprite sprite)
         {
-            //Bullet.eBulletType spriteBulletType = (Bullet.eBulletType)Enum.Parse(typeof(Bullet.eBulletType), sprite.ToString());
             Bullet.eBulletType spriteBulletType;
             bool isParse = Enum.TryParse(sprite.ToString(), out spriteBulletType);
 
@@ -262,17 +270,7 @@ namespace Game1
                 {
                     if (Components[i] is Bullet && isParse && (Components[i] as Bullet).BullletType != spriteBulletType)
                     {
-                        Bullet currentBullet = (Components[i] as Bullet);
-                        Rectangle bulletRect = getRectangleFromSprite(currentBullet);
-                        Rectangle spriteRect = getRectangleFromSprite(sprite);
-
-                        if (bulletRect.Intersects(spriteRect))
-                        {
-                            (sprite as Ivulnerable).IsHitted = true;
-                            doWhenHitBulletHitSprite(spriteBulletType, sprite);
-                            currentBullet.Dispose();
-                            Components.Remove(currentBullet);
-                        }
+                        checkIfBulletIntersectsWithSpriteAndHandle(Components[i] as Bullet, sprite, spriteBulletType);
                     }
                 }
             }
@@ -289,21 +287,53 @@ namespace Game1
                 {
                     if (Components[i] is Bullet && sprite is Bullet && !Components[i].Equals(sprite))
                     {
-                        Bullet currentBullet = (Components[i] as Bullet);
-                        Rectangle bulletRect = getRectangleFromSprite(currentBullet);
-                        Rectangle spriteRect = getRectangleFromSprite(sprite);
-
-                        if (bulletRect.Intersects(spriteRect))
-                        {
-                            (sprite as Ivulnerable).IsHitted = true;
-                            //doWhenHitBulletHitSprite(spriteBulletType, sprite);
-                            currentBullet.Dispose();
-                            Components.Remove(currentBullet);
-                        }
+                        checkIfBulletIntersectsWithSpriteAndHandle(Components[i] as Bullet, sprite, spriteBulletType);
                     }
                 }
             }
         }
+
+        private void checkIfBulletIntersectsWithSpriteAndHandle(Bullet currentBullet, Sprite sprite, Bullet.eBulletType spriteBulletType)
+        {
+            //Bullet currentBullet = (Components[i] as Bullet);
+            Rectangle bulletRect = getRectangleFromSprite(currentBullet);
+            Rectangle spriteRect = getRectangleFromSprite(sprite);
+
+            if (bulletRect.Intersects(spriteRect))
+            {
+                //(sprite as Ivulnerable).IsHitted = true;
+                doWhenHitBulletHitSprite(spriteBulletType, sprite);
+                currentBullet.Dispose();
+                Components.Remove(currentBullet);
+            }
+        }
+
+        private void doWhenHitBulletHitSprite(Bullet.eBulletType sprtieBulletType, Sprite sprite)
+        {
+            if(sprite is Bullet)
+            {
+                sprite.Dispose();
+                Components.Remove(sprite);
+
+            }
+            else if(sprtieBulletType == Bullet.eBulletType.Spaceship)
+            {
+                doWhenhitSpaceship();
+            }
+            else if(sprtieBulletType == Bullet.eBulletType.Enemy)
+            {
+                doWhenHitEnemy(sprite as EnemyBase);
+            }
+        }
+
+
+        private void doWhenhitSpaceship()
+        {
+            initSpaceShipPosition();
+            m_NumberOfSouls--;
+            m_Score -= 1900;
+        }
+
 
 
         #region MotherShip
@@ -415,21 +445,6 @@ namespace Game1
             return randomRowAndCol;
         }
 
-        private void doWhenHitBulletHitSprite(Bullet.eBulletType sprtieBulletType, Sprite sprite)
-        {
-            switch (sprtieBulletType)
-            {
-                case Bullet.eBulletType.Spaceship:
-                    doWhenhitSpaceship();
-                    break;
-                case Bullet.eBulletType.Enemy:
-                    doWhenHitEnemy(sprite as EnemyBase);
-                    break;
-                default:
-                    break;
-            }
-        }
-
         private void doWhenHitEnemy(EnemyBase enemy)
         {
             enemy.Visible = false;
@@ -444,13 +459,6 @@ namespace Game1
                 }
 
             }
-        }
-
-        private void doWhenhitSpaceship()
-        {
-            initSpaceShipPosition();
-            m_NumberOfSouls--;
-            m_Score -= 1900;
         }
 
         private void checkIfEnemyNeedMoveGapAndUpdate()
